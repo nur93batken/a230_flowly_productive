@@ -1,6 +1,9 @@
 import 'package:a230_flowly/presentations/bloc/homework_cubit.dart';
 import 'package:a230_flowly/presentations/models/hobbi.dart';
 import 'package:a230_flowly/presentations/models/home_work_model_a230.dart';
+
+import 'package:a230_flowly/presentations/pages/main/splash_screen_flowly.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -33,7 +36,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
-        home: const Scaffold(body: Center(child: Text('Hello World'))),
+        home: SplashScreenFlowly(),
       ),
     );
   }

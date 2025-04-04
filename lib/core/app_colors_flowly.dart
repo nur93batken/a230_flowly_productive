@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class AppColorsFlowly {
   static const Color whiteColor = Color(0xFFFFFFFF);
-
   static const Color blueColor = Color(0xFF65B4FE);
   static const Color backroundColor = Color(0xFFEEEEEE);
   static const Color black = Color(0xFF181818);

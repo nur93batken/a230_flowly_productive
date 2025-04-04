@@ -62,14 +62,14 @@ class _OnboardingFlowlyState extends State<OnboardingFlowly> {
           ),
 
           Positioned(
-            bottom: 100,
+            bottom: 120,
             left: 0,
             right: 0,
             child: _buildPageIndicator(currentPage),
           ),
 
           Positioned(
-            bottom: 20,
+            bottom: 30,
             left: 16,
             right: 16,
             child: _buildBottomButton(context),

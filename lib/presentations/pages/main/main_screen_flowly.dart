@@ -1,4 +1,5 @@
 import 'package:a230_flowly/core/app_colors_flowly.dart';
+import 'package:a230_flowly/presentations/pages/home_work/home_work.dart';
 import 'package:flutter/material.dart';
 
 class MainScreenFlowly extends StatefulWidget {
@@ -10,7 +11,12 @@ class MainScreenFlowly extends StatefulWidget {
 
 class _MainScreenFlowlyState extends State<MainScreenFlowly> {
   int currentIndex = 0;
-  final List<Widget> pages = [Scaffold(), Scaffold(), Scaffold(), Scaffold()];
+  final List<Widget> pages = [
+    Scaffold(),
+    Scaffold(),
+    HomeWorkPageA230(),
+    Scaffold(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -40,17 +46,17 @@ class _MainScreenFlowlyState extends State<MainScreenFlowly> {
   List<BottomNavigationBarItem> _navBarItems(int currentIndex) {
     return [
       _buildNavItem(
-        'Tracker',
+        'Home',
         currentIndex == 0 ? 'assets/icons/Home2.png' : 'assets/icons/Home.png',
         0,
       ),
       _buildNavItem(
-        'History',
+        'Hobbies',
         currentIndex == 1 ? 'assets/icons/Star2.png' : 'assets/icons/Star.png',
         1,
       ),
       _buildNavItem(
-        'Calculator',
+        'Homework',
         currentIndex == 2
             ? 'assets/icons/Checklist2.png'
             : 'assets/icons/Checklist.png',

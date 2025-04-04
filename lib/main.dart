@@ -1,3 +1,4 @@
+import 'package:a230_flowly/presentations/pages/main/splash_screen_flowly.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const Scaffold(body: Center(child: Text('Hello World'))),
+      home: SplashScreenFlowly(),
     );
   }
 }

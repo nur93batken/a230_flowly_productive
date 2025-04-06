@@ -21,7 +21,7 @@ class HomeworkModel extends HiveObject {
   late final DateTime endDate;
 
   @HiveField(5)
-  final HomeworkStatus status;
+  late final HomeworkStatus status;
 
   HomeworkModel({
     required this.title,

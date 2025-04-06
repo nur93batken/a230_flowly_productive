@@ -1,5 +1,7 @@
+import 'package:a230_flowly/presentations/bloc/homework_cubit.dart';
 import 'package:a230_flowly/presentations/models/home_work_model_a230.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeworkCard extends StatelessWidget {
   final HomeworkModel homework;
@@ -20,12 +22,86 @@ class HomeworkCard extends StatelessWidget {
   String _statusText(HomeworkStatus status) {
     switch (status) {
       case HomeworkStatus.atWork:
-        return "At Work";
+        return "At work";
       case HomeworkStatus.completed:
-        return "Completed";
+        return "Done";
       case HomeworkStatus.overdue:
         return "Overdue";
     }
+  }
+
+  IconData _statusIcon(HomeworkStatus status) {
+    switch (status) {
+      case HomeworkStatus.atWork:
+        return Icons.wb_sunny;
+      case HomeworkStatus.completed:
+        return Icons.check_circle;
+      case HomeworkStatus.overdue:
+        return Icons.flag;
+    }
+  }
+
+  void _showStatusPopup(BuildContext context) {
+    HomeworkStatus? selected = homework.status;
+
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (_) => StatefulBuilder(
+            builder: (context, setState) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Homework status",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ...HomeworkStatus.values.map((status) {
+                      final isSelected = selected == status;
+                      return ListTile(
+                        leading: Icon(
+                          _statusIcon(status),
+                          color: _statusColor(status),
+                        ),
+                        title: Text(_statusText(status)),
+                        trailing:
+                            isSelected
+                                ? const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.blue,
+                                )
+                                : const Icon(Icons.radio_button_off),
+                        onTap: () => setState(() => selected = status),
+                      );
+                    }),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      onPressed: () {
+                        homework.status = selected!;
+                        homework.save();
+                        context.read<HomeworkCubit>().loadHomeworks();
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade200,
+                      ),
+                      child: const Text("Select"),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+    );
   }
 
   @override
@@ -35,7 +111,6 @@ class HomeworkCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         title: Text(
@@ -47,22 +122,24 @@ class HomeworkCard extends StatelessWidget {
           children: [
             Text(homework.description),
             const SizedBox(height: 4),
-            Text("Hobby: ${homework.hobby.name}"),
             Text(
-              "From: ${homework.startDate.toLocal().toString().split(' ')[0]}",
+              "From ${homework.startDate.toLocal().toString().split(' ')[0]} to ${homework.endDate.toLocal().toString().split(' ')[0]}",
             ),
-            Text("To: ${homework.endDate.toLocal().toString().split(' ')[0]}"),
+            Text("Hobby: ${homework.hobby.name}"),
           ],
         ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.circle, color: statusColor, size: 12),
-            Text(
-              statusText,
-              style: TextStyle(color: statusColor, fontSize: 12),
-            ),
-          ],
+        trailing: GestureDetector(
+          onTap: () => _showStatusPopup(context),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(_statusIcon(homework.status), color: statusColor),
+              Text(
+                statusText,
+                style: TextStyle(color: statusColor, fontSize: 12),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,5 @@
 import 'package:a230_flowly/core/app_colors_flowly.dart';
-import 'package:a230_flowly/presentations/pages/home_work/home_work.dart';
+import 'package:a230_flowly/presentations/pages/home_work/home_work_a230.dart';
 import 'package:flutter/material.dart';
 
 class MainScreenFlowly extends StatefulWidget {

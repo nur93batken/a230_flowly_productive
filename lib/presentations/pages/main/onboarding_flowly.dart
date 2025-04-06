@@ -1,5 +1,5 @@
 import 'package:a230_flowly/core/app_colors_flowly.dart';
-import 'package:a230_flowly/presentations/pages/main/main_screen_flowly.dart';
+import 'package:a230_flowly/presentations/pages/user_profile.dart/add_user_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,7 +23,7 @@ class _OnboardingFlowlyState extends State<OnboardingFlowly> {
     Navigator.pushReplacement(
       // ignore: use_build_context_synchronously
       context,
-      MaterialPageRoute(builder: (_) => const MainScreenFlowly()),
+      MaterialPageRoute(builder: (_) => const AddOrEditUserScreen()),
     );
   }
 
@@ -62,7 +62,7 @@ class _OnboardingFlowlyState extends State<OnboardingFlowly> {
           ),
 
           Positioned(
-            bottom: 120,
+            bottom: 105,
             left: 0,
             right: 0,
             child: _buildPageIndicator(currentPage),

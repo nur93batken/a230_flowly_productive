@@ -34,15 +34,19 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
+ 
   flutter_bloc: ^8.1.3
   equatable: ^2.0.5
-  path_provider: ^2.1.1
   intl: ^0.18.1
   shared_preferences: ^2.5.3
-  flutter_svg: ^2.0.17
 
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
+  image_picker: ^1.1.2
+  permission_handler: ^11.4.0
+  flutter_screenutil: ^5.9.3
+  path_provider: ^2.1.5
+  flutter_svg: ^2.0.17
 
 
 dev_dependencies:
@@ -73,6 +77,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/category_icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

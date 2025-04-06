@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 part 'user_model.g.dart';
 
@@ -9,4 +12,11 @@ class UserModel extends HiveObject {
   final String userImage;
 
   UserModel(this.name, this.userImage);
+  ImageProvider get imageProvider {
+    if (userImage.isEmpty) return const AssetImage('assets/icons/Gallery.png');
+    final file = File(userImage);
+    return file.existsSync()
+        ? FileImage(file)
+        : const AssetImage('assets/icons/Gallery.png');
+  }
 }

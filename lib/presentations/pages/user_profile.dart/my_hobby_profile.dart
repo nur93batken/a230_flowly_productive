@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:a230_flowly/core/app_colors_flowly.dart';
 import 'package:a230_flowly/presentations/pages/user_profile.dart/add_user_screen.dart';
 import 'package:flutter/material.dart';
@@ -99,10 +97,7 @@ class _MyHobbyProfileState extends State<MyHobbyProfile> {
                                   backgroundColor:
                                       AppColorsFlowly.backroundColor,
                                   radius: 65,
-                                  backgroundImage:
-                                      user.userImage.isNotEmpty
-                                          ? FileImage(File(user.userImage))
-                                          : null,
+                                  backgroundImage: user.imageProvider,
                                   child:
                                       user.userImage.isEmpty
                                           ? Image.asset(

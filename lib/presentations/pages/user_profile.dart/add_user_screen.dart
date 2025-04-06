@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'dart:io';
@@ -50,6 +51,21 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
     super.dispose();
   }
 
+  Future<String> _copyImageToPermanentDirectory(String imagePath) async {
+    final File imageFile = File(imagePath);
+    final Directory appDir = await getApplicationDocumentsDirectory();
+    final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final File permanentFile = await imageFile.copy('${appDir.path}/$fileName');
+
+    if (await permanentFile.exists()) {
+      print("Файл успешно скопирован: ${permanentFile.path}");
+    } else {
+      print("Ошибка: файл не существует после копирования");
+    }
+    return permanentFile.path;
+  }
+
+  // _pickImage функциясын өзгөртүү
   Future<void> _pickImage() async {
     try {
       final status = await Permission.storage.request();
@@ -57,12 +73,11 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
         final picker = ImagePicker();
         final pickedFile = await picker.pickImage(source: ImageSource.gallery);
         if (pickedFile != null) {
-          setState(() => _imagePath = pickedFile.path);
+          final permanentPath = await _copyImageToPermanentDirectory(
+            pickedFile.path,
+          );
+          setState(() => _imagePath = permanentPath);
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Разрешение берилген жок!')),
-        );
       }
     } catch (e) {
       print("Ката: $e");

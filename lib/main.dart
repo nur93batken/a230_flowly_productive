@@ -60,15 +60,14 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => HomeworkCubit()..loadHomeworks()),
         BlocProvider(create: (context) => HobbyCubit()),
-
         BlocProvider(create: (context) => UserCubit()),
       ],
-
       child: MaterialApp(
         title: 'Flowly App',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         ),
+
         home: SplashScreenFlowly(),
       ),
     );

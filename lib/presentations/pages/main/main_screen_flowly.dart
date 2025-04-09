@@ -108,7 +108,6 @@ class _MainScreenFlowlyState extends State<MainScreenFlowly> {
           // Фон с полупрозрачной подложкой
           child: Container(
             width: 335,
-            height: 258,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColorsFlowly.backroundColor,

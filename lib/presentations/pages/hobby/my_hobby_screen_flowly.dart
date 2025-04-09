@@ -5,7 +5,6 @@ import 'package:a230_flowly/presentations/models/category_model.dart';
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
 import 'package:a230_flowly/presentations/pages/hobby/add_hobbies_flowly.dart';
 import 'package:a230_flowly/presentations/pages/hobby/detail_screen_flowly.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,7 +20,7 @@ class MyHobbyScreenFlowly extends StatefulWidget {
 class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
   final _searchController = TextEditingController();
   List<CategoryModel> _availableCategories = [];
-  Set<String> _selectedCategoryTitles = {};
+  final Set<String> _selectedCategoryTitles = {};
   @override
   void initState() {
     super.initState();
@@ -38,14 +37,6 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
   ];
   CategoryModel? _selectedCategory;
   int? _currentEditingIndex;
-
-  bool _showCategoryDropdown = false;
-
-  void _showCategoryDialog() {
-    setState(() {
-      _showCategoryDropdown = !_showCategoryDropdown;
-    });
-  }
 
   String _getCategoryIcon(String status) {
     switch (status) {
@@ -66,7 +57,6 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
 
     for (var hobby in hobbies) {
       if (!uniqueTitles.contains(hobby.categoryModel.title)) {
-        uniqueTitles.add(hobby.categoryModel.title);
         categories.add(hobby.categoryModel);
       }
     }
@@ -86,8 +76,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
           selectedCategories.isEmpty ||
           selectedCategories.contains(hobby.categoryModel.title);
 
-      return nameMatches &&
-          categoryMatches; // Only show hobbies that match selected categories
+      return nameMatches && categoryMatches;
     }).toList();
   }
 
@@ -132,6 +121,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
           if (filteredHobbies.isEmpty) {
             return _EmptyPlaceHolder();
           }
+
           return Stack(
             children: [
               SingleChildScrollView(
@@ -157,14 +147,16 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                                   return GestureDetector(
                                     onTap: () {
                                       setState(() {
-                                        if (isSelected) {
-                                          _selectedCategoryTitles
-                                              .clear(); // Remove if already selected
+                                        if (_selectedCategoryTitles.contains(
+                                          category.title,
+                                        )) {
+                                          _selectedCategoryTitles.remove(
+                                            category.title,
+                                          );
                                         } else {
-                                          _selectedCategoryTitles.clear();
                                           _selectedCategoryTitles.add(
                                             category.title,
-                                          ); // Add to selected categories
+                                          );
                                         }
                                       });
                                     },
@@ -212,6 +204,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                             16.verticalSpace,
                             TextFormField(
                               controller: _searchController,
+                              onChanged: (value) => setState(() {}),
                               decoration: InputDecoration(
                                 contentPadding: EdgeInsets.symmetric(
                                   vertical: 10,
@@ -226,7 +219,6 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                                   borderSide: BorderSide.none,
                                 ),
                               ),
-                              // validator не нужен, т.к. необязательное поле
                             ),
                             16.verticalSpace,
                           ],
@@ -236,7 +228,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
-                          final hobby = hobbies[index];
+                          final hobby = filteredHobbies[index];
                           final status =
                               hobby.status!.isNotEmpty
                                   ? hobby.status
@@ -318,7 +310,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                                         GestureDetector(
                                           onTap: () {
                                             _currentEditingIndex = index;
-                                            _showCategoryDialog();
+                                            _showStatusDialog(context);
                                           },
                                           child: SizedBox(
                                             height: 40.h,
@@ -393,146 +385,8 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                   ),
                 ),
               ),
-              if (_showCategoryDropdown)
-                Positioned(
-                  top: 60,
-                  left: 20,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColorsFlowly.backroundColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    height: 406.h,
-                    width: 335.w,
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        Row(
-                          spacing: 50.w,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              'Hobby category',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showCategoryDropdown = false;
-                                });
-                              },
-                              icon: Icon(
-                                Icons.close,
-                                color: AppColorsFlowly.blueColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: _categories.length,
-                            itemBuilder: (context, index) {
-                              final category = _categories[index];
 
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedCategory = category;
-
-                                    if (_currentEditingIndex != null) {
-                                      context.read<HobbyCubit>().updateHobbyStatus(
-                                        _currentEditingIndex!, // Используем сохраненный индекс
-                                        _categories[index].title,
-                                      );
-                                    }
-                                  });
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 10),
-                                  margin: EdgeInsets.all(8),
-                                  height: 48,
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    color: AppColorsFlowly.whiteColor,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Image.asset(
-                                            category.imagePath,
-                                            height: 24.h,
-                                            width: 24.h,
-                                          ),
-                                          3.horizontalSpace,
-                                          Text(category.title),
-                                        ],
-                                      ),
-                                      Container(
-                                        width: 22,
-                                        height: 22,
-                                        decoration: BoxDecoration(
-                                          color:
-                                              category == _selectedCategory
-                                                  ? Color(0xFF4FC3F7)
-                                                  : Colors.white,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color:
-                                                category == _selectedCategory
-                                                    ? Color(0xFF4FC3F7)
-                                                    : AppColorsFlowly.black,
-                                          ),
-                                        ),
-                                        child:
-                                            category == _selectedCategory
-                                                ? Icon(
-                                                  Icons.check,
-                                                  size: 13,
-                                                  color:
-                                                      AppColorsFlowly
-                                                          .whiteColor,
-                                                )
-                                                : null,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed:
-                              _selectedCategory != null
-                                  ? () => setState(
-                                    () => _showCategoryDropdown = false,
-                                  )
-                                  : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColorsFlowly.blueColor,
-                            disabledBackgroundColor: Color(0xffB8D7F4),
-                            minimumSize: Size(double.infinity, 56.h),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Select',
-                            style: TextStyle(color: AppColorsFlowly.whiteColor),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+              // if (_showCategoryDropdown)
             ],
           );
         },
@@ -601,6 +455,157 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
     } else {
       return Colors.black; // Черный по умолчанию
     }
+  }
+
+  void _showStatusDialog(BuildContext context) async {
+    // Ensure we are calling this from a context that is active
+    if (_currentEditingIndex == null) {
+      return; // Return if there's no editing index
+    }
+
+    // Show the dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: AppColorsFlowly.backroundColor,
+
+              content: Container(
+                decoration: BoxDecoration(
+                  color: AppColorsFlowly.backroundColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                height: 406.h,
+                width: 335.w,
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Hobby category',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context); // Close the dialog
+                          },
+                          icon: Icon(
+                            Icons.close,
+                            color: AppColorsFlowly.blueColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _categories[index];
+
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedCategory = category;
+                                context.read<HobbyCubit>().updateHobbyStatus(
+                                  _currentEditingIndex!,
+                                  category.title,
+                                );
+                              });
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              margin: EdgeInsets.all(8),
+                              height: 48,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: AppColorsFlowly.whiteColor,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Image.asset(
+                                        category.imagePath,
+                                        height: 24.h,
+                                        width: 24.h,
+                                      ),
+                                      SizedBox(width: 3.w),
+                                      Text(category.title),
+                                    ],
+                                  ),
+                                  Container(
+                                    width: 22,
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          category == _selectedCategory
+                                              ? Color(0xFF4FC3F7)
+                                              : Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color:
+                                            category == _selectedCategory
+                                                ? Color(0xFF4FC3F7)
+                                                : AppColorsFlowly.black,
+                                      ),
+                                    ),
+                                    child:
+                                        category == _selectedCategory
+                                            ? Icon(
+                                              Icons.check,
+                                              size: 13,
+                                              color: AppColorsFlowly.whiteColor,
+                                            )
+                                            : null,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed:
+                          _selectedCategory != null
+                              ? () {
+                                // Close the dialog once a category is selected
+                                Navigator.pop(context);
+                                // Perform any other necessary logic
+                              }
+                              : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColorsFlowly.blueColor,
+                        disabledBackgroundColor: Color(0xffB8D7F4),
+                        minimumSize: Size(double.infinity, 56.h),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Select',
+                        style: TextStyle(color: AppColorsFlowly.whiteColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
 

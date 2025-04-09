@@ -1,7 +1,7 @@
-import 'package:a230_flowly/presentations/bloc/homework_state.dart';
-import 'package:a230_flowly/presentations/models/home_work_model_a230.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
+import '../models/home_work_model_a230.dart';
+import 'homework_state.dart';
 
 class HomeworkCubit extends Cubit<HomeworkState> {
   HomeworkCubit()
@@ -10,12 +10,33 @@ class HomeworkCubit extends Cubit<HomeworkState> {
   final _box = Hive.box<HomeworkModel>('homeworks');
 
   void loadHomeworks() {
-    final all = _box.values.toList();
+    final all =
+        _box.values
+            .map(
+              (hw) => HomeworkModel(
+                title: hw.title,
+                description: hw.description,
+                hobby: hw.hobby,
+                startDate: hw.startDate,
+                endDate: hw.endDate,
+                status: hw.status,
+              ),
+            )
+            .toList();
+
+    final query = state.searchQuery.toLowerCase();
+    final filtered =
+        query.isEmpty
+            ? all
+            : all
+                .where((hw) => hw.title.toLowerCase().contains(query))
+                .toList();
+
     emit(
       state.copyWith(
-        allHomeworks: all,
-        filteredHomeworks: all,
-        isSearchActive: false,
+        allHomeworks: List.from(all),
+        filteredHomeworks: List.from(filtered),
+        isSearchActive: query.isNotEmpty,
       ),
     );
   }
@@ -25,27 +46,53 @@ class HomeworkCubit extends Cubit<HomeworkState> {
     loadHomeworks();
   }
 
+  void updateHomeworkStatus(
+    HomeworkModel homework,
+    HomeworkStatus newStatus,
+  ) async {
+    final original = _box.values.firstWhere(
+      (h) => h.title == homework.title && h.startDate == homework.startDate,
+      orElse: () => throw Exception('Homework not found'),
+    );
+
+    original.status = newStatus;
+    await original.save();
+    loadHomeworks();
+  }
+
+  void updateHomeworkdedline(
+    HomeworkModel homework,
+    DateTime newDeadline,
+  ) async {
+    final original = _box.values.firstWhere(
+      (h) => h.title == homework.title && h.startDate == homework.startDate,
+      orElse: () => throw Exception('Homework not found'),
+    );
+
+    original.endDate = newDeadline;
+    await original.save();
+    loadHomeworks();
+  }
+
   void deleteHomework(int index) async {
     await _box.deleteAt(index);
     loadHomeworks();
   }
 
   void searchHomeworks(String query) {
-    if (query.isEmpty) {
-      emit(
-        state.copyWith(
-          filteredHomeworks: state.allHomeworks,
-          isSearchActive: false,
-        ),
-      );
-    } else {
-      final results =
-          state.allHomeworks
-              .where(
-                (hw) => hw.title.toLowerCase().contains(query.toLowerCase()),
-              )
-              .toList();
-      emit(state.copyWith(filteredHomeworks: results, isSearchActive: true));
-    }
+    final normalized = query.trim().toLowerCase();
+
+    final filtered =
+        state.allHomeworks
+            .where((hw) => hw.title.toLowerCase().contains(normalized))
+            .toList();
+
+    emit(
+      state.copyWith(
+        filteredHomeworks: filtered,
+        isSearchActive: normalized.isNotEmpty,
+        searchQuery: query,
+      ),
+    );
   }
 }

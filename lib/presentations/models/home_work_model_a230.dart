@@ -1,27 +1,29 @@
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
+import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
 
 part 'home_work_model_a230.g.dart';
 
 @HiveType(typeId: 12)
-class HomeworkModel extends HiveObject {
+// ignore: must_be_immutable
+class HomeworkModel extends HiveObject with EquatableMixin {
   @HiveField(0)
-  late final String title;
+  String title;
 
   @HiveField(1)
-  late final String description;
+  String description;
 
   @HiveField(2)
-  late final HobbyModel hobby;
+  HobbyModel hobby;
 
   @HiveField(3)
-  late final DateTime startDate;
+  DateTime startDate;
 
   @HiveField(4)
-  late final DateTime endDate;
+  DateTime endDate;
 
   @HiveField(5)
-  late final HomeworkStatus status;
+  HomeworkStatus status;
 
   HomeworkModel({
     required this.title,
@@ -31,6 +33,17 @@ class HomeworkModel extends HiveObject {
     required this.endDate,
     required this.status,
   });
+
+  @override
+  List<Object?> get props => [
+    key,
+    title,
+    description,
+    hobby,
+    startDate,
+    endDate,
+    status,
+  ];
 }
 
 @HiveType(typeId: 13)

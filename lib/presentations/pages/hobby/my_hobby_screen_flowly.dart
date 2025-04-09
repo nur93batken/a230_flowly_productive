@@ -29,7 +29,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
             height: 32,
             width: 32,
           ),
-          10.horizontalSpace,
+          const SizedBox(width: 16),
         ],
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.vertical(

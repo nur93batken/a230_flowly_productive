@@ -10,6 +10,7 @@ import 'package:a230_flowly/presentations/pages/main/splash_screen_flowly.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/adapters.dart';
 
 void main() async {
@@ -24,31 +25,12 @@ void main() async {
   Hive.registerAdapter(UserModelAdapter());
 
   await Hive.openBox<HobbyModel>('hobbies');
-  await Hive.openBox<CategoryModel>('usersBox');
+  await Hive.openBox<UserModel>('usersBox');
   await Hive.openBox<HomeworkModel>('homeworks');
+  await Hive.openBox<CategoryModel>('categories');
 
-  Future<void> initializeCategoriesIfNeeded() async {
-    final categoryBox = Hive.box<CategoryModel>('categories');
-
-    if (categoryBox.isEmpty) {
-      final defaultCategories = [
-        CategoryModel(
-          imagePath: 'assets/images/cat2.png',
-          title: 'Outdoor sport',
-        ),
-        CategoryModel(imagePath: 'assets/images/cat1.png', title: 'Science'),
-        CategoryModel(imagePath: 'assets/images/cat2.png', title: 'Design'),
-        CategoryModel(
-          imagePath: 'assets/images/cat3.png',
-          title: 'Programming',
-        ),
-        CategoryModel(imagePath: 'assets/images/cat1.png', title: 'Cooking'),
-      ];
-
-      await categoryBox.addAll(defaultCategories);
-      print('Default categories initialized');
-    }
-  }
+  //await initializeCategoriesIfNeeded();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -62,13 +44,16 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => HobbyCubit()),
         BlocProvider(create: (context) => UserCubit()),
       ],
-      child: MaterialApp(
-        title: 'Flowly App',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        ),
+      child: ScreenUtilInit(
+        designSize: const Size(375, 812),
+        child: MaterialApp(
+          title: 'Flowly App',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          ),
 
-        home: SplashScreenFlowly(),
+          home: SplashScreenFlowly(),
+        ),
       ),
     );
   }

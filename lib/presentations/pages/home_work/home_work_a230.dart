@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class HomeWorkPageA230 extends StatefulWidget {
   const HomeWorkPageA230({super.key});
@@ -177,9 +178,21 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
                     itemCount: state.filteredHomeworks.length,
                     itemBuilder: (context, index) {
                       final homework = state.filteredHomeworks[index];
-                      return HomeworkCard(
-                        key: ValueKey(homework.key), //  ✅
-                        homework: homework,
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) =>
+                                      EditHomeworkPage(homework: homework),
+                            ),
+                          );
+                        },
+                        child: HomeworkCard(
+                          key: ValueKey(homework.key), //  ✅
+                          homework: homework,
+                        ),
                       );
                     },
                   ),
@@ -258,6 +271,7 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
         widget.homework,
         selectedStatus,
       );
+      Navigator.pop(context);
     }
   }
 
@@ -274,6 +288,7 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
         return StatefulBuilder(
           builder: (context, setState) {
             return Dialog(
+              backgroundColor: Color(0xffeeeeee),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -287,65 +302,148 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          "Select a new deadline",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
+                        Expanded(
+                          child: const Text(
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            "Select a new\ndeadline",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 28,
+                              fontFamily: 'Instrument Sans',
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.close),
+                          child: SvgPicture.asset(
+                            "assets/icons/close.svg",
+                            height: 36,
+                            width: 36,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    16.verticalSpace,
 
                     // Calendar
-                    CalendarDatePicker(
-                      initialDate: selectedDate,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                      onDateChanged: (newDate) {
-                        setState(() => selectedDate = newDate);
-                      },
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColorsFlowly.whiteColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TableCalendar(
+                        firstDay: DateTime.now(),
+                        lastDay: DateTime.now().add(const Duration(days: 365)),
+                        focusedDay: selectedDate,
+                        selectedDayPredicate:
+                            (day) => isSameDay(selectedDate, day),
+                        onDaySelected: (selectedDay, focusedDay) {
+                          setState(() {
+                            selectedDate = selectedDay;
+                          });
+                        },
+                        calendarStyle: CalendarStyle(
+                          todayDecoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            shape: BoxShape.circle,
+                          ),
+                          selectedDecoration: BoxDecoration(
+                            color: AppColorsFlowly.blueColor,
+                            shape: BoxShape.circle,
+                          ),
+                          selectedTextStyle: TextStyle(color: Colors.white),
+                        ),
+                        headerStyle: HeaderStyle(
+                          formatButtonVisible: false,
+                          titleCentered: true,
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    12.verticalSpace,
 
                     // Done Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF64B3FD),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                    GestureDetector(
+                      onTap: () {
+                        context.read<HomeworkCubit>().updateHomeworkdedline(
+                          homework,
+                          selectedDate,
+                        );
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 45.h,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 13,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFF64B3FD),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {
-                          context.read<HomeworkCubit>().updateHomeworkdedline(
-                            homework,
-                            selectedDate,
-                          );
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'Done',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 8,
+                          children: [
+                            Text(
+                              'Done',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontFamily: 'Instrument Sans',
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    12.verticalSpace,
 
                     // Cancel Button
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        "Cancel the status changing",
-                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: double.infinity,
+                        height: 45,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 9,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Cancel the status changing',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xFF181818),
+                                fontSize: 16,
+                                fontFamily: 'SF Pro',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

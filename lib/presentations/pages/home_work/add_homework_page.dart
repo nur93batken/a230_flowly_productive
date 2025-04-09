@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class EditHomeworkPage extends StatefulWidget {
   final HomeworkModel? homework; // nullable — жаңы же редакция
@@ -25,8 +26,189 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
   DateTime? _startDate;
   DateTime? _endDate;
   HobbyModel? _selectedHobby;
+  HomeworkStatus? _selectedStatus;
 
   bool get isEditMode => widget.homework != null;
+
+  Future<void> _showNewDeadlineDialog({required bool isStart}) async {
+    DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Color(0xffeeeeee),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title + Close Icon
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: const Text(
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            "Select a new\ndeadline",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 28,
+                              fontFamily: 'Instrument Sans',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: SvgPicture.asset(
+                            "assets/icons/close.svg",
+                            height: 36,
+                            width: 36,
+                          ),
+                        ),
+                      ],
+                    ),
+                    16.verticalSpace,
+
+                    // Calendar
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColorsFlowly.whiteColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: TableCalendar(
+                        firstDay: DateTime.now(),
+                        lastDay: DateTime.now().add(const Duration(days: 365)),
+                        focusedDay: selectedDate,
+                        selectedDayPredicate:
+                            (day) => isSameDay(selectedDate, day),
+                        onDaySelected: (selectedDay, focusedDay) {
+                          setState(() {
+                            selectedDate = selectedDay;
+                          });
+                        },
+                        calendarStyle: CalendarStyle(
+                          todayDecoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            shape: BoxShape.circle,
+                          ),
+                          selectedDecoration: BoxDecoration(
+                            color: AppColorsFlowly.blueColor,
+                            shape: BoxShape.circle,
+                          ),
+                          selectedTextStyle: TextStyle(color: Colors.white),
+                        ),
+                        headerStyle: HeaderStyle(
+                          formatButtonVisible: false,
+                          titleCentered: true,
+                        ),
+                      ),
+                    ),
+                    12.verticalSpace,
+
+                    // Done Button
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          if (isStart) {
+                            _startDate = selectedDate;
+                          } else {
+                            _endDate = selectedDate;
+                          }
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        height: 45.h,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 13,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFF64B3FD),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          spacing: 8,
+                          children: [
+                            Text(
+                              'Done',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontFamily: 'Instrument Sans',
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    12.verticalSpace,
+
+                    // Cancel Button
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: double.infinity,
+                        height: 45,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 9,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Cancel the status changing',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: const Color(0xFF181818),
+                                fontSize: 16,
+                                fontFamily: 'SF Pro',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -38,25 +220,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
     _startDate = hw?.startDate;
     _endDate = hw?.endDate;
     _selectedHobby = hw?.hobby;
-  }
-
-  Future<void> _pickDate({required bool isStart}) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 2),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isStart) {
-          _startDate = picked;
-        } else {
-          _endDate = picked;
-        }
-      });
-    }
+    _selectedStatus = hw?.status;
   }
 
   Future<void> _pickHobby() async {
@@ -69,11 +233,149 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
     }
   }
 
+  String _statusText(HomeworkStatus status) {
+    switch (status) {
+      case HomeworkStatus.atWork:
+        return "At work";
+      case HomeworkStatus.completed:
+        return "Done";
+      case HomeworkStatus.overdue:
+        return "Overdue";
+    }
+  }
+
+  String _statusIcon(HomeworkStatus status) {
+    switch (status) {
+      case HomeworkStatus.atWork:
+        return 'loading';
+      case HomeworkStatus.completed:
+        return 'done';
+      case HomeworkStatus.overdue:
+        return 'report';
+    }
+  }
+
+  void _showStatusDialog(BuildContext context) async {
+    _selectedStatus = await showDialog<HomeworkStatus>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        HomeworkStatus? selected = widget.homework!.status;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Color(0xffeeeeee),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Title + Close
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Homework status",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontFamily: 'Instrument Sans',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: SvgPicture.asset(
+                          "assets/icons/close.svg",
+                          height: 36,
+                          width: 36,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Options
+                  ...HomeworkStatus.values.map((status) {
+                    final isSelected = selected == status;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: null,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        leading: SvgPicture.asset(
+                          'assets/icons/${_statusIcon(status)}.svg',
+                          width: 24.w,
+                          height: 24.h,
+                        ),
+                        title: Text(_statusText(status)),
+                        trailing:
+                            isSelected
+                                ? SvgPicture.asset(
+                                  'assets/icons/check1.svg',
+                                  width: 24,
+                                  height: 24,
+                                )
+                                : SvgPicture.asset(
+                                  'assets/icons/check2.svg',
+                                  width: 24,
+                                  height: 24,
+                                ),
+                        onTap: () => setState(() => selected = status),
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 16),
+                  // Select Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed:
+                          selected == null
+                              ? null
+                              : () => Navigator.pop(context, selected),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            selected == null
+                                ? Colors.blue.shade100
+                                : Colors.blue.shade400,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text("Select"),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (_selectedStatus != null && _selectedStatus != widget.homework!.status) {
+      // ignore: use_build_context_synchronously
+      context.read<HomeworkCubit>().updateHomeworkStatus(
+        widget.homework!,
+        _selectedStatus!,
+      );
+    }
+  }
+
   bool get _isFormValid =>
       _title.isNotEmpty &&
       _startDate != null &&
       _endDate != null &&
-      _selectedHobby != null;
+      _selectedHobby != null &&
+      _selectedStatus != null &&
+      _title != widget.homework!.title;
 
   void _submit() async {
     if (!_isFormValid) return;
@@ -89,7 +391,8 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
         ..description = _description
         ..startDate = _startDate!
         ..endDate = _endDate!
-        ..hobby = _selectedHobby!;
+        ..hobby = _selectedHobby!
+        ..status = _selectedStatus ?? HomeworkStatus.atWork;
 
       await hw.save(); // Hive'ге сактайбыз
       cubit.loadHomeworks(); // Cubit аркылуу UI жаңыртабыз
@@ -107,6 +410,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
       cubit.addHomework(newHw);
     }
 
+    // ignore: use_build_context_synchronously
     Navigator.pop(context); // Форма жабылат
   }
 
@@ -129,7 +433,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
-            'New task',
+            isEditMode ? 'Edit task' : 'New task',
             style: TextStyle(
               color: Colors.black,
               fontSize: 20,
@@ -252,7 +556,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                 ),
                 6.verticalSpace,
                 GestureDetector(
-                  onTap: () => _pickDate(isStart: true),
+                  onTap: () => _showNewDeadlineDialog(isStart: true),
                   child: Container(
                     width: double.infinity,
                     height: 48.h,
@@ -310,7 +614,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                 ),
                 6.verticalSpace,
                 GestureDetector(
-                  onTap: () => _pickDate(isStart: false),
+                  onTap: () => _showNewDeadlineDialog(isStart: false),
                   child: Container(
                     width: double.infinity,
                     height: 48.h,
@@ -357,6 +661,82 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   ),
                 ),
                 16.verticalSpace,
+                if (widget.homework != null)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Activity status* ',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontFamily: 'Instrument Sans',
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      6.verticalSpace,
+                      GestureDetector(
+                        onTap: () => _showStatusDialog(context),
+                        child: Container(
+                          width: double.infinity,
+                          height: 48.h,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          decoration: ShapeDecoration(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  _selectedHobby != null
+                                      ? SvgPicture.asset(
+                                        _selectedStatus?.name == 'completed'
+                                            ? 'assets/icons/done.svg'
+                                            : _selectedStatus?.name == 'atWork'
+                                            ? 'assets/icons/loading.svg'
+                                            : _selectedStatus?.name == 'overdue'
+                                            ? 'assets/icons/report.svg'
+                                            : 'assets/icons/loading.svg',
+                                        width: 24,
+                                        height: 24,
+                                      )
+                                      : const SizedBox(),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _selectedHobby == null
+                                        ? 'Select category'
+                                        : _selectedStatus!.name.toUpperCase(),
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Instrument Sans',
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SvgPicture.asset(
+                                'assets/icons/arrowleft.svg',
+                                width: 24,
+                                height: 24,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      16.verticalSpace,
+                    ],
+                  ),
                 Text(
                   'Hobby categorization* ',
                   style: TextStyle(

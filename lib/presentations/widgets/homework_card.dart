@@ -52,8 +52,9 @@ class HomeworkCard extends StatelessWidget {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
+              backgroundColor: Color(0xffeeeeee),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
               ),
               contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
               content: Column(
@@ -66,13 +67,19 @@ class HomeworkCard extends StatelessWidget {
                       const Text(
                         "Homework status",
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          fontSize: 20,
+                          fontFamily: 'Instrument Sans',
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       GestureDetector(
                         onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.close),
+                        child: SvgPicture.asset(
+                          "assets/icons/close.svg",
+                          height: 36,
+                          width: 36,
+                        ),
                       ),
                     ],
                   ),
@@ -83,7 +90,8 @@ class HomeworkCard extends StatelessWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+                        color: Colors.white,
+                        border: null,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
@@ -95,11 +103,16 @@ class HomeworkCard extends StatelessWidget {
                         title: Text(_statusText(status)),
                         trailing:
                             isSelected
-                                ? const Icon(
-                                  Icons.radio_button_checked,
-                                  color: Colors.blue,
+                                ? SvgPicture.asset(
+                                  'assets/icons/check1.svg',
+                                  width: 24,
+                                  height: 24,
                                 )
-                                : const Icon(Icons.radio_button_off),
+                                : SvgPicture.asset(
+                                  'assets/icons/check2.svg',
+                                  width: 24,
+                                  height: 24,
+                                ),
                         onTap: () => setState(() => selected = status),
                       ),
                     );

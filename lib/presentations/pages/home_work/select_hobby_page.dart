@@ -235,6 +235,17 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                   itemCount: filteredHobbies.length,
                   itemBuilder: (_, index) {
                     final hobby = filteredHobbies[index];
+                    final duration = hobby.endTime.difference(DateTime.now());
+
+                    String timeLeftText;
+                    if (duration.inDays >= 1) {
+                      timeLeftText = '${duration.inDays} days left';
+                    } else if (duration.inHours >= 1) {
+                      timeLeftText = '${duration.inHours} hours left';
+                    } else {
+                      timeLeftText = 'Less than an hour left';
+                    }
+
                     return GestureDetector(
                       onTap: () => Navigator.pop(context, hobby),
                       child: Card(
@@ -252,11 +263,14 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Image.asset(
-                                hobby.image,
-                                height: 150,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(
+                                  hobby.image,
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                               8.verticalSpace,
                               Row(
@@ -297,11 +311,13 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                                   ),
                                   const Spacer(),
                                   Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '6 days left',
-                                        style: TextStyle(
-                                          color: const Color(0xFF797979),
+                                        timeLeftText,
+                                        style: const TextStyle(
+                                          color: Color(0xFF797979),
                                           fontSize: 16,
                                           fontFamily: 'Instrument Sans',
                                           fontWeight: FontWeight.w500,
@@ -310,8 +326,10 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                                       Text(
                                         "${hobby.startTime.toLocal().toString().split(' ')[0]} → ${hobby.endTime.toLocal().toString().split(' ')[0]}",
                                         style: const TextStyle(
+                                          color: Color(0xFF797979),
                                           fontSize: 12,
-                                          color: Colors.grey,
+                                          fontFamily: 'Instrument Sans',
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ],

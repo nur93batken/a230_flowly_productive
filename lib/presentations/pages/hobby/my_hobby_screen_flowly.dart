@@ -5,6 +5,7 @@ import 'package:a230_flowly/presentations/models/category_model.dart';
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
 import 'package:a230_flowly/presentations/pages/hobby/add_hobbies_flowly.dart';
 import 'package:a230_flowly/presentations/pages/hobby/detail_screen_flowly.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -277,7 +278,8 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                                             fit: BoxFit.cover,
                                           ),
                                         )
-                                        : 12.verticalSpace,
+                                        : Container(),
+                                    12.verticalSpace,
                                     Row(
                                       children: [
                                         Image.asset(

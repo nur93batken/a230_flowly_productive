@@ -55,4 +55,15 @@ class HobbyCubit extends Cubit<List<HobbyModel>> {
       print('Ошибка: индекс выходит за пределы диапазона');
     }
   }
+
+  Future<void> updateHobbyProgress(int index, double progress) async {
+    final box = await Hive.openBox<HobbyModel>('hobbies');
+    final hobby = box.getAt(index);
+
+    // Прогресс жаңыланат
+    hobby?.progressNotes?.add("Progress updated to $progress%");
+    await hobby?.save();
+
+    emit(box.values.toList()); // Бул жаңыртуу боюнча билдирүү
+  }
 }

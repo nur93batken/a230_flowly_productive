@@ -33,7 +33,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
   Future<void> _showNewDeadlineDialog({required bool isStart}) async {
     DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
 
-    await showDialog(
+    final pickedDate = await showDialog<DateTime>(
       context: context,
       barrierDismissible: false,
       builder: (context) {
@@ -126,7 +126,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                             _endDate = selectedDate;
                           }
                         });
-                        Navigator.pop(context);
+                        Navigator.pop(context, selectedDate);
                       },
                       child: Container(
                         width: double.infinity,
@@ -208,6 +208,15 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
         );
       },
     );
+    if (pickedDate != null) {
+      setState(() {
+        if (isStart) {
+          _startDate = pickedDate;
+        } else {
+          _endDate = pickedDate;
+        }
+      });
+    }
   }
 
   @override
@@ -362,20 +371,20 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
 
     if (_selectedStatus != null && _selectedStatus != widget.homework!.status) {
       // ignore: use_build_context_synchronously
-      context.read<HomeworkCubit>().updateHomeworkStatus(
-        widget.homework!,
-        _selectedStatus!,
-      );
+      _selectedStatus = _selectedStatus;
+      setState(() {
+        _selectedStatus = _selectedStatus;
+      });
     }
   }
 
   bool get _isFormValid =>
       _title.isNotEmpty &&
-      _startDate != null &&
-      _endDate != null &&
-      _selectedHobby != null &&
-      _selectedStatus != null &&
-      _title != widget.homework!.title;
+          _startDate != null &&
+          _endDate != null &&
+          _selectedHobby != null &&
+          _title != widget.homework?.title ||
+      (_selectedStatus != null && _title != widget.homework?.title);
 
   void _submit() async {
     if (!_isFormValid) return;
@@ -385,16 +394,15 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
     if (isEditMode) {
       final hw = widget.homework!;
 
-      // Маалыматтарды жаңыртабыз
-      hw
-        ..title = _title
-        ..description = _description
-        ..startDate = _startDate!
-        ..endDate = _endDate!
-        ..hobby = _selectedHobby!
-        ..status = _selectedStatus ?? HomeworkStatus.atWork;
-
-      await hw.save(); // Hive'ге сактайбыз
+      cubit.updateHomework(
+        hw,
+        _title,
+        _description,
+        _selectedHobby!,
+        _startDate!,
+        _endDate!,
+        _selectedStatus ?? HomeworkStatus.atWork,
+      ); // Hive'ге сактайбыз
       cubit.loadHomeworks(); // Cubit аркылуу UI жаңыртабыз
     } else {
       // Жаңы тапшырма түзөбүз
@@ -414,437 +422,545 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
     Navigator.pop(context); // Форма жабылат
   }
 
+  void showExitDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Title + Close icon
+              Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      "Exit?",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: const Icon(Icons.close, color: Colors.grey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Description
+              const Text(
+                "Are you sure you want to come out?\nThe entered data will be lost",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Color(0xFF5E5E5E)),
+              ),
+              const SizedBox(height: 24),
+
+              // Stay button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.blue,
+                    backgroundColor: const Color(0xFFF3F3F3),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    "Stay",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Leave button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx); // Close the dialog
+                    Navigator.pop(context); // Go back
+                  },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF64B3FD),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    "Leave",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: AppColorsFlowly.backroundColor,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: false,
-          leading: IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/arrow.svg',
-              width: 24,
-              height: 24,
+      // ignore: deprecated_member_use
+      child: WillPopScope(
+        onWillPop: () async {
+          showExitDialog(context);
+          return false;
+        },
+        child: Scaffold(
+          backgroundColor: AppColorsFlowly.backroundColor,
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: false,
+            leading: IconButton(
+              icon: SvgPicture.asset(
+                'assets/icons/arrow.svg',
+                width: 24,
+                height: 24,
+              ),
+              onPressed: () => Navigator.pop(context),
             ),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            isEditMode ? 'Edit task' : 'New task',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 20,
-              fontFamily: 'Instrument Sans',
-              fontWeight: FontWeight.w500,
+            title: Text(
+              isEditMode ? 'Edit task' : 'New task',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontFamily: 'Instrument Sans',
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: [
-                16.verticalSpace,
-                Text(
-                  'Task name*',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'Instrument Sans',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                6.verticalSpace,
-                TextFormField(
-                  initialValue: _title,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: 'Task name*',
-
-                    hintStyle: TextStyle(
-                      color: const Color(0xFF181818),
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: ListView(
+                children: [
+                  16.verticalSpace,
+                  Text(
+                    'Task name*',
+                    style: TextStyle(
+                      color: Colors.black,
                       fontSize: 16,
                       fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 16,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 0,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 0,
-                      ),
-                    ),
                   ),
-                  onChanged: (val) => setState(() => _title = val),
-                ),
-                16.verticalSpace,
-                Text(
-                  'Task description',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'Instrument Sans',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                6.verticalSpace,
-                TextFormField(
-                  initialValue: _description,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: "Task description",
+                  6.verticalSpace,
+                  TextFormField(
+                    initialValue: _title,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: 'Task name*',
 
-                    hintStyle: TextStyle(
-                      color: const Color(0xFF181818),
+                      hintStyle: TextStyle(
+                        color: const Color(0xFF181818),
+                        fontSize: 16,
+                        fontFamily: 'Instrument Sans',
+                        fontWeight: FontWeight.w500,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(
+                          color: Colors.transparent,
+                          width: 0,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(
+                          color: Colors.transparent,
+                          width: 0,
+                        ),
+                      ),
+                    ),
+                    onChanged: (val) => setState(() => _title = val),
+                  ),
+                  16.verticalSpace,
+                  Text(
+                    'Task description',
+                    style: TextStyle(
+                      color: Colors.black,
                       fontSize: 16,
                       fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 16,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 0,
+                  ),
+                  6.verticalSpace,
+                  TextFormField(
+                    initialValue: _description,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: "Task description",
+
+                      hintStyle: TextStyle(
+                        color: const Color(0xFF181818),
+                        fontSize: 16,
+                        fontFamily: 'Instrument Sans',
+                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                      borderSide: BorderSide(
-                        color: Colors.transparent,
-                        width: 0,
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
                       ),
-                    ),
-                  ),
-                  onChanged: (val) => setState(() => _description = val),
-                ),
-                16.verticalSpace,
-                Text(
-                  'Start date* ',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'Instrument Sans',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                6.verticalSpace,
-                GestureDetector(
-                  onTap: () => _showNewDeadlineDialog(isStart: true),
-                  child: Container(
-                    width: double.infinity,
-                    height: 48.h,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          _startDate == null
-                              ? 'Select date'
-                              : _startDate!
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')[0]
-                                  .split('-')
-                                  .reversed
-                                  .join('.'),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontFamily: 'Instrument Sans',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SvgPicture.asset(
-                          'assets/icons/arrowleft.svg',
-                          width: 24,
-                          height: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                16.verticalSpace,
-                Text(
-                  'End date* ',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'Instrument Sans',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                6.verticalSpace,
-                GestureDetector(
-                  onTap: () => _showNewDeadlineDialog(isStart: false),
-                  child: Container(
-                    width: double.infinity,
-                    height: 48.h,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          _endDate == null
-                              ? 'Select date'
-                              : _endDate!
-                                  .toLocal()
-                                  .toString()
-                                  .split(' ')[0]
-                                  .split('-')
-                                  .reversed
-                                  .join('.'),
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontFamily: 'Instrument Sans',
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        SvgPicture.asset(
-                          'assets/icons/arrowleft.svg',
-                          width: 24,
-                          height: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                16.verticalSpace,
-                if (widget.homework != null)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Activity status* ',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontFamily: 'Instrument Sans',
-                          fontWeight: FontWeight.w500,
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(
+                          color: Colors.transparent,
+                          width: 0,
                         ),
                       ),
-                      6.verticalSpace,
-                      GestureDetector(
-                        onTap: () => _showStatusDialog(context),
-                        child: Container(
-                          width: double.infinity,
-                          height: 48.h,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 16,
-                          ),
-                          clipBehavior: Clip.antiAlias,
-                          decoration: ShapeDecoration(
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        borderSide: BorderSide(
+                          color: Colors.transparent,
+                          width: 0,
+                        ),
+                      ),
+                    ),
+                    onChanged: (val) => setState(() => _description = val),
+                  ),
+                  16.verticalSpace,
+                  Text(
+                    'Start date* ',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Instrument Sans',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  6.verticalSpace,
+                  GestureDetector(
+                    onTap: () => _showNewDeadlineDialog(isStart: true),
+                    child: Container(
+                      width: double.infinity,
+                      height: 48.h,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            _startDate == null
+                                ? 'Select date'
+                                : _startDate!
+                                    .toLocal()
+                                    .toString()
+                                    .split(' ')[0]
+                                    .split('-')
+                                    .reversed
+                                    .join('.'),
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontFamily: 'Instrument Sans',
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Row(
-                                children: [
-                                  _selectedHobby != null
-                                      ? SvgPicture.asset(
-                                        _selectedStatus?.name == 'completed'
-                                            ? 'assets/icons/done.svg'
-                                            : _selectedStatus?.name == 'atWork'
-                                            ? 'assets/icons/loading.svg'
-                                            : _selectedStatus?.name == 'overdue'
-                                            ? 'assets/icons/report.svg'
-                                            : 'assets/icons/loading.svg',
-                                        width: 24,
-                                        height: 24,
-                                      )
-                                      : const SizedBox(),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _selectedHobby == null
-                                        ? 'Select category'
-                                        : _selectedStatus!.name.toUpperCase(),
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontFamily: 'Instrument Sans',
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
+                          SvgPicture.asset(
+                            'assets/icons/arrowleft.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  16.verticalSpace,
+                  Text(
+                    'End date* ',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Instrument Sans',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  6.verticalSpace,
+                  GestureDetector(
+                    onTap: () => _showNewDeadlineDialog(isStart: false),
+                    child: Container(
+                      width: double.infinity,
+                      height: 48.h,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            _endDate == null
+                                ? 'Select date'
+                                : _endDate!
+                                    .toLocal()
+                                    .toString()
+                                    .split(' ')[0]
+                                    .split('-')
+                                    .reversed
+                                    .join('.'),
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontFamily: 'Instrument Sans',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SvgPicture.asset(
+                            'assets/icons/arrowleft.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  16.verticalSpace,
+                  if (widget.homework != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Activity status* ',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontFamily: 'Instrument Sans',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        6.verticalSpace,
+                        GestureDetector(
+                          onTap: () => _showStatusDialog(context),
+                          child: Container(
+                            width: double.infinity,
+                            height: 48.h,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 16,
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            decoration: ShapeDecoration(
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                              SvgPicture.asset(
-                                'assets/icons/arrowleft.svg',
-                                width: 24,
-                                height: 24,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Row(
+                                  children: [
+                                    _selectedHobby != null
+                                        ? SvgPicture.asset(
+                                          _selectedStatus?.name == 'completed'
+                                              ? 'assets/icons/done.svg'
+                                              : _selectedStatus?.name ==
+                                                  'atWork'
+                                              ? 'assets/icons/loading.svg'
+                                              : _selectedStatus?.name ==
+                                                  'overdue'
+                                              ? 'assets/icons/report.svg'
+                                              : 'assets/icons/loading.svg',
+                                          width: 24,
+                                          height: 24,
+                                        )
+                                        : const SizedBox(),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _selectedHobby == null
+                                          ? 'Select category'
+                                          : _selectedStatus!.name,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                        fontFamily: 'Instrument Sans',
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SvgPicture.asset(
+                                  'assets/icons/arrowleft.svg',
+                                  width: 24,
+                                  height: 24,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        16.verticalSpace,
+                      ],
+                    ),
+                  Text(
+                    'Hobby categorization* ',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontFamily: 'Instrument Sans',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  6.verticalSpace,
+                  GestureDetector(
+                    onTap: () => _pickHobby(),
+                    child: Container(
+                      width: double.infinity,
+                      height: 48.h,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 16,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              _selectedHobby != null
+                                  ? Image.asset(
+                                    _selectedHobby!.categoryModel.imagePath,
+                                    width: 24,
+                                    height: 24,
+                                  )
+                                  : const SizedBox(),
+                              const SizedBox(width: 8),
+                              Text(
+                                _selectedHobby == null
+                                    ? 'Select hobby'
+                                    : _selectedHobby!.name,
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Instrument Sans',
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ],
                           ),
+                          SvgPicture.asset(
+                            'assets/icons/arrowleft.svg',
+                            width: 24,
+                            height: 24,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  30.verticalSpace,
+                  GestureDetector(
+                    onTap: () {
+                      if (_isFormValid) {
+                        _submit();
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color:
+                            _isFormValid
+                                ? const Color(0xFF64B3FD)
+                                : const Color.fromARGB(255, 147, 203, 255),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      16.verticalSpace,
-                    ],
-                  ),
-                Text(
-                  'Hobby categorization* ',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontFamily: 'Instrument Sans',
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                6.verticalSpace,
-                GestureDetector(
-                  onTap: () => _pickHobby(),
-                  child: Container(
-                    width: double.infinity,
-                    height: 48.h,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          children: [
-                            _selectedHobby != null
-                                ? Image.asset(
-                                  _selectedHobby!.categoryModel.imagePath,
-                                  width: 24,
-                                  height: 24,
-                                )
-                                : const SizedBox(),
-                            const SizedBox(width: 8),
-                            Text(
-                              _selectedHobby == null
-                                  ? 'Select hobby'
-                                  : _selectedHobby!.name,
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontFamily: 'Instrument Sans',
-                                fontWeight: FontWeight.w500,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        spacing: 10,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            spacing: 8,
+                            children: [
+                              Text(
+                                'Save',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontFamily: 'Instrument Sans',
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SvgPicture.asset(
-                          'assets/icons/arrowleft.svg',
-                          width: 24,
-                          height: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                30.verticalSpace,
-                GestureDetector(
-                  onTap: _isFormValid ? _submit : null,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color:
-                          _isFormValid
-                              ? const Color(0xFF64B3FD)
-                              : const Color.fromARGB(255, 147, 203, 255),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      spacing: 10,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          spacing: 8,
-                          children: [
-                            Text(
-                              'Save',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontFamily: 'Instrument Sans',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

@@ -1,3 +1,4 @@
+import 'package:a230_flowly/presentations/models/hobby_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import '../models/home_work_model_a230.dart';
@@ -70,6 +71,32 @@ class HomeworkCubit extends Cubit<HomeworkState> {
     );
 
     original.endDate = newDeadline;
+    await original.save();
+    loadHomeworks();
+  }
+
+  void updateHomework(
+    HomeworkModel updated,
+    String title,
+    String description,
+    HobbyModel hobby,
+    DateTime startDate,
+    DateTime endDate,
+    HomeworkStatus status,
+  ) async {
+    final original = _box.values.firstWhere(
+      (h) => h.title == updated.title && h.startDate == updated.startDate,
+      orElse: () => throw Exception('Homework not found'),
+    );
+
+    original
+      ..title = title
+      ..description = description
+      ..hobby = hobby
+      ..startDate = startDate
+      ..endDate = endDate
+      ..status = status;
+
     await original.save();
     loadHomeworks();
   }

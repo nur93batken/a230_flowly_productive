@@ -149,6 +149,7 @@ class HomeworkCard extends StatelessWidget {
     );
 
     if (selectedStatus != null && selectedStatus != homework.status) {
+      // ignore: use_build_context_synchronously
       context.read<HomeworkCubit>().updateHomeworkStatus(
         homework,
         selectedStatus,
@@ -158,8 +159,6 @@ class HomeworkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("🏷 HomeworkCard rebuilt: ${homework.title} with ${homework.status}");
-
     final statusColor = _statusColor(homework.status);
     final statusText = _statusText(homework.status);
 

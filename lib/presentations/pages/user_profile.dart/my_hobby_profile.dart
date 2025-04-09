@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io' show File;
 
 import 'package:a230_flowly/core/app_colors_flowly.dart';
@@ -262,9 +263,9 @@ class _MyHobbyProfileState extends State<MyHobbyProfile> {
                                       ListView.builder(
                                         shrinkWrap: true,
                                         physics: NeverScrollableScrollPhysics(),
-                                        itemCount: hobbies.length,
+                                        itemCount: 3,
                                         itemBuilder: (context, index) {
-                                          final hobby = hobbies[index];
+                                          // final hobby = hobbies[index];
                                           return Container(
                                             height: 100,
                                             width: 335,
@@ -280,23 +281,11 @@ class _MyHobbyProfileState extends State<MyHobbyProfile> {
                                                 Row(
                                                   children: [
                                                     Image.asset(
-                                                      hobby
-                                                          .progressImages
-                                                          .first,
+                                                      'assets/category_icons/Frame.png',
                                                     ),
                                                     Text('Zarlyk'),
                                                   ],
                                                 ),
-                                                // Row(
-                                                //   children: [
-                                                //     Text(
-                                                //       DateFormat(
-                                                //         'dd.MM.yy',
-                                                //       ).format(hobby.startTime),
-                                                //     ),
-                                                //     Image.asset(hobby.status!),
-                                                //   ],
-                                                // ),
                                               ],
                                             ),
                                           );

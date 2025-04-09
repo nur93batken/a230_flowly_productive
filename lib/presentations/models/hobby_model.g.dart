@@ -23,13 +23,16 @@ class HobbyModelAdapter extends TypeAdapter<HobbyModel> {
       description: fields[3] as String,
       startTime: fields[4] as DateTime,
       endTime: fields[5] as DateTime,
+      status: fields[6] as String?,
+      progressNotes: (fields[7] as List?)?.cast<String>(),
+      progressImages: (fields[8] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, HobbyModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.image)
       ..writeByte(1)
@@ -41,7 +44,13 @@ class HobbyModelAdapter extends TypeAdapter<HobbyModel> {
       ..writeByte(4)
       ..write(obj.startTime)
       ..writeByte(5)
-      ..write(obj.endTime);
+      ..write(obj.endTime)
+      ..writeByte(6)
+      ..write(obj.status)
+      ..writeByte(7)
+      ..write(obj.progressNotes)
+      ..writeByte(8)
+      ..write(obj.progressImages);
   }
 
   @override

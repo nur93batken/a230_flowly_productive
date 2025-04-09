@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:a230_flowly/core/app_colors_flowly.dart';
 import 'package:a230_flowly/presentations/bloc/user_cubit.dart';
 import 'package:a230_flowly/presentations/models/user_model.dart';
@@ -5,12 +7,8 @@ import 'package:a230_flowly/presentations/pages/main/main_screen_flowly.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-import 'dart:io';
 
 class AddOrEditUserScreen extends StatefulWidget {
   final bool isEditing;
@@ -31,6 +29,7 @@ class AddOrEditUserScreen extends StatefulWidget {
 class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
   final _nameController = TextEditingController();
   String _imagePath = '';
+
   bool get _isButtonEnabled => _nameController.text.trim().isNotEmpty;
 
   @override
@@ -39,7 +38,9 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
     if (widget.isEditing && widget.user != null) {
       _nameController.text = widget.user!.name;
       _imagePath = widget.user!.userImage;
+      if (_imagePath.isNotEmpty) {}
     }
+
     _nameController.addListener(() {
       setState(() {});
     });
@@ -56,31 +57,22 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
     final Directory appDir = await getApplicationDocumentsDirectory();
     final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
     final File permanentFile = await imageFile.copy('${appDir.path}/$fileName');
-
-    if (await permanentFile.exists()) {
-      print("Файл успешно скопирован: ${permanentFile.path}");
-    } else {
-      print("Ошибка: файл не существует после копирования");
-    }
     return permanentFile.path;
   }
 
-  // _pickImage функциясын өзгөртүү
   Future<void> _pickImage() async {
-    try {
-      final status = await Permission.storage.request();
-      if (status.isGranted) {
-        final picker = ImagePicker();
-        final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-        if (pickedFile != null) {
-          final permanentPath = await _copyImageToPermanentDirectory(
-            pickedFile.path,
-          );
-          setState(() => _imagePath = permanentPath);
-        }
-      }
-    } catch (e) {
-      print("Ката: $e");
+    final pickedFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+
+    if (pickedFile != null) {
+      final permanentPath = await _copyImageToPermanentDirectory(
+        pickedFile.path,
+      );
+      setState(() {
+        // Сүрөттү туруктуу папкага сактоо
+        _imagePath = permanentPath; // Жолду сактоо
+      });
     }
   }
 
@@ -92,7 +84,7 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
       appBar:
           widget.isEditing
               ? AppBar(
-                title: Text(
+                title: const Text(
                   'Edit profile',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                 ),
@@ -100,110 +92,116 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
               : null,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Text(
-                'Enter some information about yourself',
-                style: TextStyle(
-                  color: AppColorsFlowly.black,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  if (_imagePath.isEmpty) {
-                    _pickImage();
-                  } else {
-                    _showEditPhotoDialog(context);
-                  }
-                },
-                child: CircleAvatar(
-                  backgroundColor: AppColorsFlowly.backroundColor,
-
-                  radius: 70,
-                  backgroundImage:
-                      _imagePath.isNotEmpty
-                          ? FileImage(File(_imagePath))
-                          : null,
-                  child:
-                      _imagePath.isEmpty
-                          ? Image.asset(
-                            'assets/icons/Gallery.png',
-                            height: 33,
-                            width: 33,
-                          )
-                          : null,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 30),
+              Center(
+                child: Text(
+                  'Enter some information about yourself',
+                  style: TextStyle(
+                    color: AppColorsFlowly.black,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Name',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              keyboardType: TextInputType.name,
-              controller: _nameController,
-              decoration: InputDecoration(
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 10,
+              const SizedBox(height: 24),
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    if (_imagePath.isEmpty) {
+                      _pickImage();
+                    } else {
+                      _showEditPhotoDialog(context);
+                    }
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: AppColorsFlowly.backroundColor,
+                    radius: 70,
+                    backgroundImage:
+                        _imagePath.isNotEmpty
+                            ? FileImage(File(_imagePath))
+                            : null,
+                    child:
+                        _imagePath.isEmpty
+                            ? Image.asset(
+                              'assets/icons/Gallery.png',
+                              height: 33,
+                              width: 33,
+                            )
+                            : null,
+                  ),
                 ),
-                filled: true,
-                fillColor: AppColorsFlowly.backroundColor,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(15),
+              ),
+              const SizedBox(height: 24),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Name',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-                hintText: 'What is your name?',
               ),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColorsFlowly.blueColor,
-                disabledBackgroundColor: Color(0xffC1E1FF),
-                minimumSize: Size(double.infinity, 48),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 10,
+                  ),
+                  filled: true,
+                  fillColor: AppColorsFlowly.backroundColor,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  hintText: 'What is your name?',
+                ),
               ),
-              onPressed:
-                  _isButtonEnabled
-                      ? () {
-                        final name = _nameController.text.trim();
-                        if (widget.isEditing && widget.index != null) {
-                          userCubit.updateUser(widget.index!, name, _imagePath);
-                        } else {
-                          userCubit.addUser(name, _imagePath);
+              const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColorsFlowly.blueColor,
+                  disabledBackgroundColor: const Color(0xffC1E1FF),
+                  minimumSize: const Size(double.infinity, 48),
+                ),
+                onPressed:
+                    _isButtonEnabled
+                        ? () {
+                          final name = _nameController.text.trim();
+                          if (widget.isEditing && widget.index != null) {
+                            userCubit.updateUser(
+                              widget.index!,
+                              name,
+                              _imagePath,
+                            );
+                            Navigator.pop(context);
+                          } else {
+                            userCubit.addUser(name, _imagePath);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const MainScreenFlowly(),
+                              ),
+                            );
+                          }
                         }
-                        if (widget.isEditing && widget.index != null) {
-                          Navigator.pop(context);
-                        } else {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MainScreenFlowly(),
-                            ),
-                          );
-                        }
-                      }
-                      : null,
-              child: Text('Save', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+                        : null,
+                child: const Text(
+                  'Save',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  _showEditPhotoDialog(BuildContext context) {
+  void _showEditPhotoDialog(BuildContext context) {
     showCupertinoDialog(
       context: context,
       builder: (BuildContext ctx) {
@@ -215,17 +213,15 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
               color: AppColorsFlowly.backroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            // Используем Material, чтобы InkWell/GestureDetector работали поверх
             child: Material(
               color: Colors.transparent,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Заголовок + кнопка "X"
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      SizedBox(width: 20),
+                      const SizedBox(width: 20),
                       const Text(
                         'Edit photo',
                         style: TextStyle(
@@ -243,12 +239,10 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-
-                  // Кнопка "Change the photo"
                   InkWell(
                     onTap: () {
-                      Navigator.of(ctx).pop(); // Закрываем диалог
-                      _pickImage(); // Открываем галерею
+                      Navigator.of(ctx).pop();
+                      _pickImage();
                     },
                     child: Container(
                       height: 45,
@@ -258,16 +252,15 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Center(child: const Text('Change the photo')),
+                      child: const Center(child: Text('Change the photo')),
                     ),
                   ),
-                  SizedBox(height: 10),
-                  // Кнопка "Delete"
+                  const SizedBox(height: 10),
                   InkWell(
                     onTap: () {
-                      Navigator.of(ctx).pop(); // Закрываем диалог
+                      Navigator.of(ctx).pop();
                       setState(() {
-                        _imagePath = ''; // Удаляем текущее фото
+                        _imagePath = '';
                       });
                     },
                     child: Container(
@@ -278,7 +271,7 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Center(
+                      child: const Center(
                         child: Text(
                           'Delete',
                           style: TextStyle(color: Colors.red),
@@ -286,11 +279,9 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
                       ),
                     ),
                   ),
-                  10.verticalSpace,
+                  const SizedBox(height: 10),
                   Container(height: 1, color: Colors.grey[300]),
-                  10.verticalSpace,
-
-                  // Кнопка "Back"
+                  const SizedBox(height: 10),
                   InkWell(
                     onTap: () {
                       Navigator.of(ctx).pop();
@@ -303,7 +294,7 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Center(child: const Text('Back')),
+                      child: const Center(child: Text('Back')),
                     ),
                   ),
                 ],

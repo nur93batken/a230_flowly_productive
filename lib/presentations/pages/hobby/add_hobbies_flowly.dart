@@ -84,7 +84,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
   bool get _isFormValid {
     return _selectedCategory != null &&
         _projectNameController.text.isNotEmpty &&
-        _selectedPhoto != null &&
         _startDate != null &&
         _endDate != null;
   }
@@ -158,11 +157,11 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
   /// Сохранение данных хобби
   Future<void> _submitForm() async {
     // Сначала валидируем поля
-    if (!_formKey.currentState!.validate() || _selectedPhoto == null) return;
+    if (!_formKey.currentState!.validate()) return;
     if (_startDate == null || _endDate == null) return; // safety-check
 
     final hobby = HobbyModel(
-      image: _selectedPhoto!.path,
+      image: _selectedPhoto?.path ?? '',
       categoryModel: _selectedCategory!,
       name: _projectNameController.text,
       description: _descriptionController.text,
@@ -492,7 +491,7 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
           ),
           if (_showCategoryDropdown)
             Positioned(
-              top: 60,
+              top: 80,
               left: 15,
 
               child: Container(

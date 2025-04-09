@@ -141,17 +141,11 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                         return GestureDetector(
                           onTap: () {
                             setState(() {
-                              // Текшерип көрүү: эгерде категория тандалбаса, аны тандап, башкаларын тазала
                               if (!isSelected) {
-                                _selectedCategoryTitles
-                                    .clear(); // Башка бардык категорияларды алып салуу
-                                _selectedCategoryTitles.add(
-                                  category.title,
-                                ); // Жаңы категорияны тандоо
+                                _selectedCategoryTitles.clear();
+                                _selectedCategoryTitles.add(category.title);
                               } else {
-                                _selectedCategoryTitles.remove(
-                                  category.title,
-                                ); // Эгерде ал категория тандалса, алып салуу
+                                _selectedCategoryTitles.remove(category.title);
                               }
                             });
                           },

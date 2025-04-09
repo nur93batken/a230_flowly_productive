@@ -119,7 +119,94 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
           );
 
           if (filteredHobbies.isEmpty) {
-            return _EmptyPlaceHolder();
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  SizedBox(
+                    height: 80,
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) {
+                        final category = _availableCategories[index];
+                        final isSelected = _selectedCategoryTitles.contains(
+                          category.title,
+                        );
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (_selectedCategoryTitles.contains(
+                                category.title,
+                              )) {
+                                _selectedCategoryTitles.remove(category.title);
+                              } else {
+                                _selectedCategoryTitles.add(category.title);
+                              }
+                            });
+                          },
+
+                          child: Container(
+                            height: 78,
+                            width: 74,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color:
+                                    isSelected
+                                        ? AppColorsFlowly.blueColor
+                                        : AppColorsFlowly
+                                            .whiteColor, // Highlight selected category
+                              ),
+                              color: AppColorsFlowly.whiteColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  category.imagePath,
+                                  height: 36,
+                                  width: 36,
+                                ),
+                                Text(
+                                  category.title,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                      separatorBuilder: (context, index) => 10.horizontalSpace,
+                      itemCount: _availableCategories.length,
+                    ),
+                  ),
+                  16.verticalSpace,
+                  TextFormField(
+                    controller: _searchController,
+                    onChanged: (value) => setState(() {}),
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(vertical: 10),
+                      prefixIcon: Icon(Icons.search),
+                      fillColor: Colors.white,
+                      filled: true,
+                      hintText: 'Search',
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  16.verticalSpace,
+                ],
+              ),
+            );
           }
 
           return Stack(

@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+
 import 'package:a230_flowly/core/app_colors_flowly.dart';
 import 'package:a230_flowly/presentations/pages/user_profile.dart/add_user_screen.dart';
 import 'package:flutter/material.dart';
@@ -93,19 +95,59 @@ class _MyHobbyProfileState extends State<MyHobbyProfile> {
                                     ),
                                   ),
                                 ),
-                                CircleAvatar(
-                                  backgroundColor:
-                                      AppColorsFlowly.backroundColor,
-                                  radius: 65,
-                                  backgroundImage: user.imageProvider,
-                                  child:
-                                      user.userImage.isEmpty
-                                          ? Image.asset(
-                                            'assets/icons/Gallery.png',
-                                            height: 40,
-                                          )
-                                          : null,
-                                ),
+                                user.userImage.isNotEmpty
+                                    ? FutureBuilder(
+                                      future: File(user.userImage).exists(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.data == true) {
+                                          return ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              75,
+                                            ),
+                                            child: Image.file(
+                                              File(user.userImage),
+                                              height: 145,
+                                              width: 145,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          );
+                                        } else {
+                                          return SizedBox(
+                                            height: 145,
+                                            width: 145,
+                                            child: DecoratedBox(
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(75),
+                                                color:
+                                                    AppColorsFlowly
+                                                        .backroundColor,
+                                              ),
+                                              child: Image.asset(
+                                                'assets/icons/Gallery.png',
+                                                height: 40,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    )
+                                    : SizedBox(
+                                      height: 145,
+                                      width: 145,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            75,
+                                          ),
+                                          color: AppColorsFlowly.backroundColor,
+                                        ),
+                                        child: Image.asset(
+                                          'assets/icons/Gallery.png',
+                                          height: 40,
+                                        ),
+                                      ),
+                                    ),
                                 CircleAvatar(
                                   radius: 28,
                                   backgroundColor: AppColorsFlowly.iconGrey,

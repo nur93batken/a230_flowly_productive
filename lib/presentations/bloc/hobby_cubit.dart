@@ -6,14 +6,14 @@ class HobbyCubit extends Cubit<List<HobbyModel>> {
   HobbyCubit() : super([]);
 
   /// Загрузка из Hive при старте
-  void loadHobbies() {
-    final box = Hive.box<HobbyModel>('hobbies');
+  Future<void> loadHobbies() async {
+    final box = await Hive.openBox<HobbyModel>('hobbies');
     emit(box.values.toList());
   }
 
   /// Создание (добавление) хобби
   Future<void> addHobby(HobbyModel hobby) async {
-    final box = Hive.box<HobbyModel>('hobbies');
+    final box = await Hive.openBox<HobbyModel>('hobbies');
     await box.add(hobby);
 
     // Обновляем состояние
@@ -22,7 +22,7 @@ class HobbyCubit extends Cubit<List<HobbyModel>> {
 
   /// Обновление (по индексу)
   Future<void> updateHobby(int index, HobbyModel updatedHobby) async {
-    final box = Hive.box<HobbyModel>('hobbies');
+    final box = await Hive.openBox<HobbyModel>('hobbies');
     // putAt обновляет запись с указанным индексом
     await box.putAt(index, updatedHobby);
 
@@ -32,10 +32,27 @@ class HobbyCubit extends Cubit<List<HobbyModel>> {
 
   /// Удаление (по индексу)
   Future<void> deleteHobby(int index) async {
-    final box = Hive.box<HobbyModel>('hobbies');
+    final box = await Hive.openBox<HobbyModel>('hobbies');
     await box.deleteAt(index);
 
     // Обновляем состояние
     emit(box.values.toList());
+  }
+
+  Future<void> updateHobbyStatus(int index, String status) async {
+    final box = Hive.box<HobbyModel>('hobbies');
+
+    // Проверяем, что индекс в пределах допустимого диапазона
+    if (index >= 0 && index < box.length) {
+      final hobby = box.getAt(index);
+
+      if (hobby != null) {
+        hobby.status = status; // Статус обновлен
+        await hobby.save(); // Сохраняем изменения в Hive
+        emit(box.values.toList()); // Обновляем состояние
+      }
+    } else {
+      print('Ошибка: индекс выходит за пределы диапазона');
+    }
   }
 }

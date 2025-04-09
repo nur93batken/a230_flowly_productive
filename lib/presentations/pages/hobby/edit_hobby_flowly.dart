@@ -1,40 +1,50 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
-import 'package:a230_flowly/core/app_colors_flowly.dart';
-import 'package:a230_flowly/presentations/bloc/hobby_cubit.dart';
-import 'package:a230_flowly/presentations/models/category_model.dart';
-import 'package:a230_flowly/presentations/models/hobby_model.dart';
+
+import 'package:a230_flowly/core/widgets/cupertino_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class AddHobbiesFlowly extends StatefulWidget {
-  const AddHobbiesFlowly({super.key});
+import 'package:a230_flowly/core/app_colors_flowly.dart';
+import 'package:a230_flowly/presentations/bloc/hobby_cubit.dart';
+import 'package:a230_flowly/presentations/models/category_model.dart';
+import 'package:a230_flowly/presentations/models/hobby_model.dart';
+
+class EditHobbiesFlowly extends StatefulWidget {
+  final HobbyModel hobby;
+  final int hobbyIndex;
+
+  const EditHobbiesFlowly({
+    super.key,
+    required this.hobby,
+    required this.hobbyIndex,
+  });
 
   @override
-  State<AddHobbiesFlowly> createState() => _AddHobbiesFlowlyState();
+  State<EditHobbiesFlowly> createState() => _EditHobbiesFlowlyState();
 }
 
-class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
+class _EditHobbiesFlowlyState extends State<EditHobbiesFlowly> {
   final _formKey = GlobalKey<FormState>();
 
-  // Текстовые поля
+  // Text controllers
   final _projectNameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  // ignore: unused_field
-  String _imagePath = '';
-  // Фото (обложка)
+
+  // Selected image
   XFile? _selectedPhoto;
 
-  // Поля дат
+  // Date fields
   DateTime? _startDate;
   DateTime? _endDate;
 
-  // Выбранная категория
+  // Selected category
   CategoryModel? _selectedCategory;
 
-  // Список категорий для примера
+  // Categories list for selection
   final List<CategoryModel> _categories = [
     CategoryModel(
       imagePath: 'assets/category_icons/Group.png',
@@ -50,7 +60,7 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
     ),
     CategoryModel(
       imagePath: 'assets/category_icons/Frame2.png',
-      title: 'Programing',
+      title: 'Programming',
     ),
     CategoryModel(
       imagePath: 'assets/category_icons/Frame3.png',
@@ -78,17 +88,26 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
     ),
   ];
 
-  bool _showCategoryDropdown = false; // Для отображения выпадающего списка
+  bool _showCategoryDropdown = false;
 
-  /// Проверяем, заполнены ли все обязательные поля
+  @override
+  void initState() {
+    super.initState();
+    _selectedPhoto = XFile(widget.hobby.image);
+    _projectNameController.text = widget.hobby.name;
+    _descriptionController.text = widget.hobby.description;
+    _startDate = widget.hobby.startTime;
+    _endDate = widget.hobby.endTime;
+    _selectedCategory = widget.hobby.categoryModel;
+  }
+
   bool get _isFormValid {
     return _selectedCategory != null &&
         _projectNameController.text.isNotEmpty &&
+        _selectedPhoto != null &&
         _startDate != null &&
         _endDate != null;
   }
-
-  /// Проверка/запрос разрешений камеры/галереи
 
   Future<void> _pickImage() async {
     try {
@@ -98,17 +117,15 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
         final pickedFile = await picker.pickImage(source: ImageSource.gallery);
         if (pickedFile != null) {
           setState(() {
-            _imagePath = pickedFile.path; // Сохраняем путь
-            _selectedPhoto = pickedFile; // Сохраняем выбранное фото
+            _selectedPhoto = pickedFile;
           });
         }
       }
     } catch (e) {
-      print("Ошибка при выборе изображения: $e");
+      print("Error selecting image: $e");
     }
   }
 
-  /// Выбор даты начала
   Future<void> _pickStartDate() async {
     final newDate = await showDatePicker(
       context: context,
@@ -119,9 +136,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
     if (newDate != null) {
       setState(() {
         _startDate = newDate;
-
-        // Если вдруг endDate уже выбрана и оказалась раньше startDate,
-        // обнулим endDate, чтобы заставить пользователя пере-выбрать
         if (_endDate != null && _endDate!.isBefore(_startDate!)) {
           _endDate = null;
         }
@@ -129,10 +143,8 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
     }
   }
 
-  /// Выбор даты окончания
   Future<void> _pickEndDate() async {
     if (_startDate == null) {
-      // Если юзер не выбрал startDate, сообщим об этом
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select Start date first')),
       );
@@ -141,9 +153,7 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
 
     final newDate = await showDatePicker(
       context: context,
-      // Если нет _endDate, берём текущую, иначе уже выбранную
       initialDate: _endDate ?? _startDate!,
-      // Заставляем юзера выбирать не раньше _startDate
       firstDate: _startDate ?? DateTime.now(),
       lastDate: DateTime(2100),
     );
@@ -154,14 +164,12 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
     }
   }
 
-  /// Сохранение данных хобби
   Future<void> _submitForm() async {
-    // Сначала валидируем поля
-    if (!_formKey.currentState!.validate()) return;
-    if (_startDate == null || _endDate == null) return; // safety-check
+    if (!_formKey.currentState!.validate() || _selectedPhoto == null) return;
+    if (_startDate == null || _endDate == null) return;
 
     final hobby = HobbyModel(
-      image: _selectedPhoto?.path ?? '',
+      image: _selectedPhoto!.path,
       categoryModel: _selectedCategory!,
       name: _projectNameController.text,
       description: _descriptionController.text,
@@ -169,10 +177,9 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
       endTime: _endDate!,
     );
 
-    // Отправляем через Cubit
-    await context.read<HobbyCubit>().addHobby(hobby);
+    await context.read<HobbyCubit>().updateHobby(widget.hobbyIndex, hobby);
 
-    // Закрываем экран, если всё ок
+    if (mounted) Navigator.pop(context);
     if (mounted) Navigator.pop(context);
   }
 
@@ -184,11 +191,16 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
 
   @override
   Widget build(BuildContext context) {
-    ScreenUtil.ensureScreenSize(); // если вы используете screenutil
     return Scaffold(
       backgroundColor: AppColorsFlowly.backroundColor,
       appBar: AppBar(
-        title: const Text('New Hobby'),
+        leading: IconButton(
+          onPressed: () {
+            showExitandDeleteDialog(context);
+          },
+          icon: Icon(Icons.keyboard_arrow_left),
+        ),
+        title: const Text('Edit Hobby'),
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.vertical(
             bottom: Radius.circular(15),
@@ -204,14 +216,12 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                     ? Colors.black87.withAlpha(50)
                     : Colors.transparent,
             child: GestureDetector(
-              onTap:
-                  () => FocusScope.of(context).unfocus(), // скрыть клавиатуру
+              onTap: () => FocusScope.of(context).unfocus(),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Form(
                   key: _formKey,
                   child: SingleChildScrollView(
-                    // на случай длинных форм
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -223,52 +233,50 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                           ),
                         ),
                         12.verticalSpace,
-
-                        // Обложка (фото)
-                        if (_selectedPhoto == null)
-                          GestureDetector(
-                            onTap: _pickImage,
-                            child: Container(
-                              height: 150,
-                              width: 303,
-                              decoration: BoxDecoration(
-                                color: AppColorsFlowly.whiteColor,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/icons/Gallery.png',
-                                    height: 28,
-                                    width: 28,
-                                    color: AppColorsFlowly.iconGrey,
-                                  ),
-                                  Text(
-                                    'Add photo',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColorsFlowly.iconGrey,
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            height: 150,
+                            width: 303,
+                            decoration: BoxDecoration(
+                              color: AppColorsFlowly.whiteColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child:
+                                _selectedPhoto == null
+                                    ? Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Image.asset(
+                                          'assets/icons/Gallery.png',
+                                          height: 28,
+                                          width: 28,
+                                          color: AppColorsFlowly.iconGrey,
+                                        ),
+                                        Text(
+                                          'Add photo',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColorsFlowly.iconGrey,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                    : ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(
+                                        File(_selectedPhoto!.path),
+                                        height: 150,
+                                        width: 303,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.file(
-                              File(_selectedPhoto!.path),
-                              height: 150,
-                              width: 303,
-                              fit: BoxFit.cover,
-                            ),
                           ),
+                        ),
                         12.verticalSpace,
 
-                        // Категория
                         const Text(
                           'Hobby category*',
                           style: TextStyle(
@@ -301,7 +309,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                                         ),
                                         Text(
                                           _selectedCategory!.title,
-
                                           style: TextStyle(color: Colors.black),
                                         ),
                                       ],
@@ -315,10 +322,9 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 20),
 
-                        // Название хобби
+                        // Hobby name
                         const Text(
                           'Hobby name*',
                           style: TextStyle(
@@ -334,7 +340,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                               vertical: 10,
                               horizontal: 15,
                             ),
-
                             fillColor: Colors.white,
                             filled: true,
                             hintText: 'Name',
@@ -347,12 +352,12 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                           validator:
                               (value) =>
                                   (value == null || value.isEmpty)
-                                      ? 'Please enter a project name'
+                                      ? 'Please enter a hobby name'
                                       : null,
                         ),
                         const SizedBox(height: 20),
 
-                        // Описание хобби (опционально)
+                        // Hobby description
                         const Text(
                           'Hobby description',
                           style: TextStyle(
@@ -368,7 +373,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                               vertical: 10,
                               horizontal: 15,
                             ),
-
                             fillColor: Colors.white,
                             filled: true,
                             hintText: 'Description',
@@ -378,11 +382,10 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                               borderSide: BorderSide.none,
                             ),
                           ),
-                          // validator не нужен, т.к. необязательное поле
                         ),
                         const SizedBox(height: 20),
 
-                        // Дата начала
+                        // Start date
                         const Text(
                           'Start date*',
                           style: TextStyle(
@@ -396,7 +399,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                           child: Container(
                             width: double.infinity,
                             height: 48,
-
                             padding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 14,
@@ -423,7 +425,7 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                         ),
                         20.verticalSpace,
 
-                        // Дата окончания
+                        // End date
                         const Text(
                           'End date*',
                           style: TextStyle(
@@ -463,7 +465,7 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                         ),
                         20.verticalSpace,
 
-                        // Кнопка "Add"
+                        // Save button
                         ElevatedButton(
                           onPressed: _isFormValid ? _submitForm : null,
                           style: ElevatedButton.styleFrom(
@@ -478,7 +480,7 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                                     : Colors.grey,
                           ),
                           child: const Text(
-                            'Add',
+                            'Save',
                             style: TextStyle(fontSize: 18, color: Colors.white),
                           ),
                         ),
@@ -493,14 +495,12 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
             Positioned(
               top: 80,
               left: 15,
-
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColorsFlowly.backroundColor,
-
                   borderRadius: BorderRadius.circular(12),
                 ),
-                height: 406.h, // или любая другая высота
+                height: 406.h, // or any height you prefer
                 width: 335.w,
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -529,7 +529,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                         ),
                       ],
                     ),
-                    // Прокручиваемый список категорий
                     Expanded(
                       child: ListView.builder(
                         itemCount: _categories.length,
@@ -598,7 +597,6 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     ElevatedButton(
                       onPressed:
                           _selectedCategory != null

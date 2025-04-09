@@ -7,5 +7,6 @@ class CategoryModel extends HiveObject {
   final String imagePath;
   @HiveField(1)
   final String title;
+
   CategoryModel({required this.imagePath, required this.title});
 }

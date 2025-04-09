@@ -109,6 +109,9 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
       ),
       body: BlocBuilder<HobbyCubit, List<HobbyModel>>(
         builder: (context, hobbies) {
+          if (hobbies.isEmpty) {
+            _EmptyPlaceHolder();
+          }
           _availableCategories = _getUniqueCategories(hobbies);
           bool showFilters = hobbies.length >= 3;
 
@@ -138,12 +141,17 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                         return GestureDetector(
                           onTap: () {
                             setState(() {
-                              if (_selectedCategoryTitles.contains(
-                                category.title,
-                              )) {
-                                _selectedCategoryTitles.remove(category.title);
+                              // Текшерип көрүү: эгерде категория тандалбаса, аны тандап, башкаларын тазала
+                              if (!isSelected) {
+                                _selectedCategoryTitles
+                                    .clear(); // Башка бардык категорияларды алып салуу
+                                _selectedCategoryTitles.add(
+                                  category.title,
+                                ); // Жаңы категорияны тандоо
                               } else {
-                                _selectedCategoryTitles.add(category.title);
+                                _selectedCategoryTitles.remove(
+                                  category.title,
+                                ); // Эгерде ал категория тандалса, алып салуу
                               }
                             });
                           },

@@ -586,7 +586,7 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColorsFlowly.blueColor,
                         disabledBackgroundColor: Color(0xffB8D7F4),
-                        minimumSize: Size(double.infinity, 56.h),
+                        minimumSize: Size(double.infinity, 45.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

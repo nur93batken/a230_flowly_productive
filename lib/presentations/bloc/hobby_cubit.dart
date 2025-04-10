@@ -1,3 +1,4 @@
+import 'package:a230_flowly/presentations/models/actions_model_a230.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
@@ -11,13 +12,24 @@ class HobbyCubit extends Cubit<List<HobbyModel>> {
     emit(box.values.toList());
   }
 
+  Future<void> loadActions() async {
+    final box = await Hive.openBox<HobbyModel>('actions');
+    emit(box.values.toList());
+  }
+
   /// Создание (добавление) хобби
   Future<void> addHobby(HobbyModel hobby) async {
     final box = await Hive.openBox<HobbyModel>('hobbies');
     await box.add(hobby);
-
+    final box0 = await Hive.openBox<ActionsModel>('actions');
+    final actionModel = ActionsModel(
+      dateTime: DateTime.now(),
+      hobbyModel: hobby,
+    );
+    await box0.add(actionModel);
     // Обновляем состояние
     emit(box.values.toList());
+    loadActions();
   }
 
   /// Обновление (по индексу)

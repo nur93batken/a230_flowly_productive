@@ -4,6 +4,7 @@ import 'package:a230_flowly/presentations/bloc/hobby_cubit.dart';
 import 'package:a230_flowly/presentations/bloc/homework_cubit.dart';
 import 'package:a230_flowly/presentations/bloc/user_cubit.dart';
 import 'package:a230_flowly/presentations/models/achievement_a230.dart';
+import 'package:a230_flowly/presentations/models/actions_model_a230.dart';
 import 'package:a230_flowly/presentations/models/category_model.dart';
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
 import 'package:a230_flowly/presentations/models/home_work_model_a230.dart';
@@ -30,12 +31,14 @@ void main() async {
   Hive.registerAdapter(HomeworkModelAdapter());
   Hive.registerAdapter(UserModelAdapter());
   Hive.registerAdapter(AchievementModelAdapter());
+  Hive.registerAdapter(ActionsModelAdapter());
 
   await Hive.openBox<HobbyModel>('hobbies');
   await Hive.openBox<UserModel>('usersBox');
   await Hive.openBox<HomeworkModel>('homeworks');
   await Hive.openBox<CategoryModel>('categories');
   await Hive.openBox<AchievementModel>('achievements');
+  await Hive.openBox<ActionsModel>('actions');
   await initializeAchievementsIfNeeded();
 
   //await initializeCategoriesIfNeeded();
@@ -52,9 +55,10 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => HomeworkCubit()..loadHomeworks()),
-        BlocProvider(create: (context) => HobbyCubit()),
-        BlocProvider(create: (context) => UserCubit()),
+        BlocProvider(create: (context) => HobbyCubit()..loadActions()),
+        BlocProvider(create: (context) => UserCubit()..loadUsers()),
         BlocProvider(create: (_) => AchievementCubit()..loadAchievements()),
+        BlocProvider(create: (context) => HobbyCubit()..loadHobbies()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),

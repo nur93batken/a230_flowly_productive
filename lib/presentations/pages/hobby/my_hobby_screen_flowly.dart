@@ -567,7 +567,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                   color: AppColorsFlowly.backroundColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                height: 406.h,
+                height: 280.h,
                 width: 335.w,
                 child: Column(
                   children: [
@@ -677,7 +677,7 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColorsFlowly.blueColor,
                         disabledBackgroundColor: Color(0xffB8D7F4),
-                        minimumSize: Size(double.infinity, 56.h),
+                        minimumSize: Size(double.infinity, 45.h),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

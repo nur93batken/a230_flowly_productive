@@ -53,10 +53,6 @@ class _MyHobbyProfileState extends State<MyHobbyProfile> {
 
           return BlocBuilder<HobbyCubit, List<HobbyModel>>(
             builder: (context, hobbies) {
-              if (hobbies.isEmpty) {
-                return Center(child: Text("Хоббилер жок"));
-              }
-
               return SingleChildScrollView(
                 child: Column(
                   children: [

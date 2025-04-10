@@ -19,17 +19,20 @@ class UserModelAdapter extends TypeAdapter<UserModel> {
     return UserModel(
       fields[0] as String,
       fields[1] as String,
+      fields[2] as DateTime,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserModel obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
-      ..write(obj.userImage);
+      ..write(obj.userImage)
+      ..writeByte(2)
+      ..write(obj.firstOpenDate);
   }
 
   @override

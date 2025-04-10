@@ -402,6 +402,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
         _startDate!,
         _endDate!,
         _selectedStatus ?? HomeworkStatus.atWork,
+        context,
       ); // Hive'ге сактайбыз
       cubit.loadHomeworks(); // Cubit аркылуу UI жаңыртабыз
     } else {
@@ -422,13 +423,13 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
     Navigator.pop(context); // Форма жабылат
   }
 
-  void showExitDialog(BuildContext context) {
+  void showDeleteDialog(BuildContext context) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: Color(0xffeeeeee),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -439,31 +440,174 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
               // Title + Close icon
               Row(
                 children: [
-                  const Expanded(
-                    child: Text(
-                      "Exit?",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Delete",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.pop(ctx),
-                    child: const Icon(Icons.close, color: Colors.grey),
+                    child: SvgPicture.asset(
+                      "assets/icons/close.svg",
+                      height: 36,
+                      width: 36,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              24.verticalSpace,
 
-              // Description
-              const Text(
-                "Are you sure you want to come out?\nThe entered data will be lost",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Color(0xFF5E5E5E)),
+              GestureDetector(
+                onTap: () {
+                  context.read<HomeworkCubit>().deleteHomework(
+                    widget.homework!.title,
+                    widget.homework!.description,
+                    widget.homework!.hobby,
+                    widget.homework!.startDate,
+                    widget.homework!.endDate,
+                    widget.homework!.status,
+                    context,
+                  );
+                  Navigator.pop(ctx);
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 45,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 9,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  decoration: ShapeDecoration(
+                    color: const Color(0x0FF12323),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                    children: [
+                      Text(
+                        'Delete',
+                        style: TextStyle(
+                          color: const Color(0xFFF12323),
+                          fontSize: 16,
+                          fontFamily: 'SF Pro',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 24),
+              12.verticalSpace,
+              // Stay button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.blue,
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text(
+                    "Back",
+                    style: TextStyle(
+                      color: Color(0xFF181818),
+                      fontSize: 16,
+                      fontFamily: 'SF Pro',
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void showExitDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: Color(0xffeeeeee),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Title + Close icon
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Exit?",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: SvgPicture.asset(
+                      "assets/icons/close.svg",
+                      height: 36,
+                      width: 36,
+                    ),
+                  ),
+                ],
+              ),
+              12.verticalSpace,
+              // Description
+              Text(
+                'Are you sure you want to come out? The entered data will be lost',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontFamily: 'Instrument Sans',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              24.verticalSpace,
 
               // Stay button
               SizedBox(
@@ -472,7 +616,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   onPressed: () => Navigator.pop(ctx),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.blue,
-                    backgroundColor: const Color(0xFFF3F3F3),
+                    backgroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -481,7 +625,12 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   ),
                   child: const Text(
                     "Stay",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Color(0xFF64B3FD),
+                      fontSize: 16,
+                      fontFamily: 'SF Pro',
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
               ),
@@ -497,7 +646,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    backgroundColor: const Color(0xFF64B3FD),
+                    backgroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -506,7 +655,12 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   ),
                   child: const Text(
                     "Leave",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Color(0xFF64B3FD),
+                      fontSize: 16,
+                      fontFamily: 'SF Pro',
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ),
               ),
@@ -529,25 +683,51 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
         },
         child: Scaffold(
           backgroundColor: AppColorsFlowly.backroundColor,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            centerTitle: false,
-            leading: IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/arrow.svg',
-                width: 24,
-                height: 24,
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(12), // ← Бул бурчту тегеректейт
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              isEditMode ? 'Edit task' : 'New task',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 20,
-                fontFamily: 'Instrument Sans',
-                fontWeight: FontWeight.w500,
+              child: AppBar(
+                backgroundColor: Colors.white,
+                elevation: 0,
+                centerTitle: false,
+                leading: IconButton(
+                  icon: SvgPicture.asset(
+                    'assets/icons/arrow.svg',
+                    width: 24,
+                    height: 24,
+                  ),
+                  onPressed: () {
+                    _isFormValid
+                        ? showExitDialog(context)
+                        : Navigator.pop(context);
+                  },
+                ),
+                title: Text(
+                  isEditMode ? 'Edit task' : 'New task',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'Instrument Sans',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                actions: [
+                  isEditMode
+                      ? IconButton(
+                        icon: SvgPicture.asset(
+                          'assets/icons/delete.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                        onPressed: () {
+                          showDeleteDialog(context);
+                        },
+                      )
+                      : const SizedBox(),
+                ],
               ),
             ),
           ),

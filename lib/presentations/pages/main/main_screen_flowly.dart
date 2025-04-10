@@ -3,6 +3,7 @@ import 'package:a230_flowly/core/app_colors_flowly.dart';
 import 'package:a230_flowly/presentations/pages/home_work/home_work_a230.dart';
 
 import 'package:a230_flowly/presentations/pages/hobby/my_hobby_screen_flowly.dart';
+import 'package:a230_flowly/presentations/pages/setting/settins_a230.dart';
 import 'package:a230_flowly/presentations/pages/user_profile.dart/my_hobby_profile.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -22,7 +23,7 @@ class _MainScreenFlowlyState extends State<MainScreenFlowly> {
     MyHobbyProfile(),
     MyHobbyScreenFlowly(),
     HomeWorkPageA230(),
-    Scaffold(),
+    SettingsPageA230(),
   ];
 
   @override

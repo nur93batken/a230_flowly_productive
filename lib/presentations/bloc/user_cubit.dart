@@ -15,7 +15,7 @@ class UserCubit extends Cubit<List<UserModel>> {
 
   /// Добавление нового пользователя
   Future<void> addUser(String name, String imagePath) async {
-    final newUser = UserModel(name, imagePath);
+    final newUser = UserModel(name, imagePath, DateTime.now());
     await _box.add(newUser);
     loadUsers();
   }
@@ -24,7 +24,7 @@ class UserCubit extends Cubit<List<UserModel>> {
   Future<void> updateUser(int index, String name, String imagePath) async {
     final key = _box.keyAt(index);
     if (key != null) {
-      await _box.put(key, UserModel(name, imagePath));
+      await _box.put(key, UserModel(name, imagePath, DateTime.now()));
       loadUsers();
     }
   }

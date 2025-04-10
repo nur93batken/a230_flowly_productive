@@ -10,8 +10,10 @@ class UserModel extends HiveObject {
   final String name;
   @HiveField(1)
   final String userImage;
+  @HiveField(2)
+  DateTime firstOpenDate;
 
-  UserModel(this.name, this.userImage);
+  UserModel(this.name, this.userImage, this.firstOpenDate);
   ImageProvider get imageProvider {
     if (userImage.isEmpty) return const AssetImage('assets/icons/Gallery.png');
     final file = File(userImage);

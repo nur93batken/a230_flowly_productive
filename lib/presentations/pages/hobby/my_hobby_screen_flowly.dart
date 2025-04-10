@@ -5,7 +5,6 @@ import 'package:a230_flowly/presentations/models/category_model.dart';
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
 import 'package:a230_flowly/presentations/pages/hobby/add_hobbies_flowly.dart';
 import 'package:a230_flowly/presentations/pages/hobby/detail_screen_flowly.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,7 +20,7 @@ class MyHobbyScreenFlowly extends StatefulWidget {
 class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
   final _searchController = TextEditingController();
   List<CategoryModel> _availableCategories = [];
-  Set<String> _selectedCategoryTitles = {};
+  final Set<String> _selectedCategoryTitles = {};
   @override
   void initState() {
     super.initState();

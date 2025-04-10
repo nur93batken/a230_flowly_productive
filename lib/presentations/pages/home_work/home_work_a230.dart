@@ -1,13 +1,17 @@
 import 'package:a230_flowly/core/app_colors_flowly.dart';
 import 'package:a230_flowly/presentations/bloc/homework_cubit.dart';
 import 'package:a230_flowly/presentations/bloc/homework_state.dart';
+import 'package:a230_flowly/presentations/models/achievement_a230.dart'
+    show AchievementModel;
 import 'package:a230_flowly/presentations/models/home_work_model_a230.dart';
+import 'package:a230_flowly/presentations/pages/home_work/achievementsPage.dart';
 import 'package:a230_flowly/presentations/pages/home_work/add_homework_page.dart';
 import 'package:a230_flowly/presentations/widgets/homework_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hive/hive.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class HomeWorkPageA230 extends StatefulWidget {
@@ -20,14 +24,38 @@ class HomeWorkPageA230 extends StatefulWidget {
 class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
   bool _checkedDeadline = false;
 
+  void _checkNewAchievementsPopup(BuildContext context) async {
+    final box = Hive.box<AchievementModel>('achievements');
+    final newOnes =
+        box.values.where((a) => a.isUnlocked && !a.isShown).toList();
+
+    for (final achievement in newOnes) {
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      await showDialog(
+        // ignore: use_build_context_synchronously
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => _AchievementPopup(achievement: achievement),
+      );
+
+      achievement.isShown = true;
+      await achievement.save();
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_checkedDeadline) {
-      final homeworks = context.read<HomeworkCubit>().state.allHomeworks;
+      final cubit = context.read<HomeworkCubit>();
+      cubit.loadHomeworks();
+      cubit.checkAchievementsData(context);
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        checkDeadlineAndShowPopup(context, homeworks);
+        _checkNewAchievementsPopup(context); // <-- UIда көрсөтүү
       });
+
       _checkedDeadline = true;
     }
   }
@@ -60,28 +88,46 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xffeeeeee),
-        appBar: AppBar(
-          backgroundColor: AppColorsFlowly.whiteColor,
-          centerTitle: true,
-          title: const Text(
-            "Homework",
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 28,
-              fontFamily: 'Instrument Sans',
-              fontWeight: FontWeight.w500,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(kToolbarHeight),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(12), // ← Бул бурчту тегеректейт
+            ),
+            child: AppBar(
+              backgroundColor: AppColorsFlowly.whiteColor,
+              centerTitle: true,
+              title: const Text(
+                "Homework",
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 28,
+                  fontFamily: 'Instrument Sans',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AchievementsPage(),
+                        ),
+                      );
+                    },
+                    child: SvgPicture.asset(
+                      "assets/icons/star.svg",
+                      height: 24,
+                      width: 24,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: SvgPicture.asset(
-                "assets/icons/star.svg",
-                height: 24,
-                width: 24,
-              ),
-            ),
-          ],
         ),
         body: BlocBuilder<HomeworkCubit, HomeworkState>(
           builder: (context, state) {
@@ -370,6 +416,7 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                         context.read<HomeworkCubit>().updateHomeworkdedline(
                           homework,
                           selectedDate,
+                          context,
                         );
                         Navigator.pop(context);
                         Navigator.pop(context);
@@ -589,6 +636,107 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AchievementPopup extends StatelessWidget {
+  final AchievementModel achievement;
+  const _AchievementPopup({required this.achievement});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      contentPadding: const EdgeInsets.all(16),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Text(
+                "You have a new achievement!",
+                style: TextStyle(
+                  color: Color(0xFF797979),
+                  fontSize: 16,
+                  fontFamily: 'Instrument Sans',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              6.horizontalSpace,
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: SvgPicture.asset(
+                  "assets/icons/close.svg",
+                  height: 36,
+                  width: 36,
+                ),
+              ),
+            ],
+          ),
+          16.verticalSpace,
+          Image.asset('assets/achievements/${achievement.id}.png', height: 120),
+          16.verticalSpace,
+          Text(
+            achievement.title,
+            style: TextStyle(
+              color: const Color(0xFF181818),
+              fontSize: 24,
+              fontFamily: 'Instrument Sans',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          8.verticalSpace,
+          Text(
+            achievement.description,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: const Color(0xFF797979),
+              fontSize: 16,
+              fontFamily: 'Instrument Sans',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          20.verticalSpace,
+          GestureDetector(
+            onTap: () {
+              achievement.isShown = true;
+              achievement.save();
+              Navigator.pop(context);
+            },
+            child: Container(
+              width: double.infinity,
+              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: ShapeDecoration(
+                color: const Color(0xFF64B3FD),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 10,
+                children: [
+                  Text(
+                    'Okay',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontFamily: 'Instrument Sans',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

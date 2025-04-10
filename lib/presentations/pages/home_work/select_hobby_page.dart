@@ -67,25 +67,33 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColorsFlowly.backroundColor,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: SvgPicture.asset(
-            'assets/icons/arrow.svg',
-            width: 24,
-            height: 24,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(12), // ← Бул бурчту тегеректейт
           ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Hobbies",
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            fontFamily: 'Instrument Sans',
-            fontWeight: FontWeight.w500,
+          child: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: false,
+            leading: IconButton(
+              icon: SvgPicture.asset(
+                'assets/icons/arrow.svg',
+                width: 24,
+                height: 24,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text(
+              "Hobbies",
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontFamily: 'Instrument Sans',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ),
       ),
@@ -304,12 +312,51 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                               6.verticalSpace,
                               Row(
                                 children: [
-                                  SvgPicture.asset(
-                                    "assets/icons/close.svg",
-                                    height: 16,
-                                    width: 16,
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                        horizontal: 12,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(
+                                          230,
+                                        ),
+                                        border: Border.all(
+                                          color: _getBorderColorForCategory(
+                                            hobby.status ?? 'Unknown',
+                                          ),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${hobby.status}',
+                                            style: TextStyle(
+                                              color: _getBorderColorForCategory(
+                                                hobby.status ?? 'Unknown',
+                                              ),
+                                              fontSize: 12,
+                                              fontFamily: 'Instrument Sans',
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          4.horizontalSpace,
+                                          Image.asset(
+                                            _getCategoryIcon(
+                                              hobby.status ?? 'Unknown',
+                                            ),
+                                            width: 24.w,
+                                            height: 24.h,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                                  const Spacer(),
+                                  6.horizontalSpace,
+
                                   Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -349,5 +396,30 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
         ],
       ),
     );
+  }
+}
+
+Color _getBorderColorForCategory(String status) {
+  if (status == 'Done') {
+    return Colors.green; // Зеленый для Done
+  } else if (status == 'In Progress') {
+    return Colors.orange; // Оранжевый для In Progress
+  } else if (status == 'Frozen') {
+    return Colors.blue; // Синий для Frozen
+  } else {
+    return Colors.black; // Черный по умолчанию
+  }
+}
+
+String _getCategoryIcon(String status) {
+  switch (status) {
+    case 'Done':
+      return 'assets/icons/done.png';
+    case 'In Progress':
+      return 'assets/icons/in_progress.png';
+    case 'Frozen':
+      return 'assets/icons/frozen.png';
+    default:
+      return 'assets/icons/default.png'; // Стандартное изображение на случай ошибки
   }
 }

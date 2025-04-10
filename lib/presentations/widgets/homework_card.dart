@@ -187,7 +187,7 @@ class HomeworkCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               homework.description,
               style: TextStyle(

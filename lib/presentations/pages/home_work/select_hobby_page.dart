@@ -33,6 +33,7 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
     categories = categorySet.values.toList();
 
     _applyFilters();
+    // Uncomment this line if you want to show all hobbies initially
   }
 
   void _applyFilters() {

@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class AddHobbiesFlowly extends StatefulWidget {
   const AddHobbiesFlowly({super.key});
@@ -104,56 +105,11 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
         }
       }
     } catch (e) {
-      print("Ошибка при выборе изображения: $e");
+      throw Exception(e.toString());
     }
   }
 
   /// Выбор даты начала
-  Future<void> _pickStartDate() async {
-    final newDate = await showDatePicker(
-      context: context,
-      initialDate: _startDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (newDate != null) {
-      setState(() {
-        _startDate = newDate;
-
-        // Если вдруг endDate уже выбрана и оказалась раньше startDate,
-        // обнулим endDate, чтобы заставить пользователя пере-выбрать
-        if (_endDate != null && _endDate!.isBefore(_startDate!)) {
-          _endDate = null;
-        }
-      });
-    }
-  }
-
-  /// Выбор даты окончания
-  Future<void> _pickEndDate() async {
-    if (_startDate == null) {
-      // Если юзер не выбрал startDate, сообщим об этом
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select Start date first')),
-      );
-      return;
-    }
-
-    final newDate = await showDatePicker(
-      context: context,
-      // Если нет _endDate, берём текущую, иначе уже выбранную
-      initialDate: _endDate ?? _startDate!,
-      // Заставляем юзера выбирать не раньше _startDate
-      firstDate: _startDate ?? DateTime.now(),
-      lastDate: DateTime(2100),
-    );
-    if (newDate != null) {
-      setState(() {
-        _endDate = newDate;
-      });
-    }
-  }
-
   /// Сохранение данных хобби
   Future<void> _submitForm() async {
     // Сначала валидируем поля
@@ -392,7 +348,9 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                         ),
                         8.verticalSpace,
                         GestureDetector(
-                          onTap: _pickStartDate,
+                          onTap: () {
+                            _showNewDeadlineDialog(isStart: true);
+                          },
                           child: Container(
                             width: double.infinity,
                             height: 48,
@@ -411,10 +369,19 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                                 Text(
                                   _startDate == null
                                       ? 'Select date'
-                                      : '${_startDate!.day.toString().padLeft(2, '0')}.'
-                                          '${_startDate!.month.toString().padLeft(2, '0')}.'
-                                          '${_startDate!.year}',
-                                  style: TextStyle(color: Colors.black),
+                                      : _startDate!
+                                          .toLocal()
+                                          .toString()
+                                          .split(' ')[0]
+                                          .split('-')
+                                          .reversed
+                                          .join('.'),
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontFamily: 'Instrument Sans',
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 Icon(Icons.arrow_forward, size: 15),
                               ],
@@ -433,7 +400,9 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                         ),
                         8.verticalSpace,
                         GestureDetector(
-                          onTap: _pickEndDate,
+                          onTap: () {
+                            _showNewDeadlineDialog(isStart: false);
+                          },
                           child: Container(
                             width: double.infinity,
                             height: 48,
@@ -451,10 +420,19 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
                                 Text(
                                   _endDate == null
                                       ? 'Select date'
-                                      : '${_endDate!.day.toString().padLeft(2, '0')}.'
-                                          '${_endDate!.month.toString().padLeft(2, '0')}.'
-                                          '${_endDate!.year}',
-                                  style: TextStyle(color: Colors.black),
+                                      : _endDate!
+                                          .toLocal()
+                                          .toString()
+                                          .split(' ')[0]
+                                          .split('-')
+                                          .reversed
+                                          .join('.'),
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontFamily: 'Instrument Sans',
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 Icon(Icons.arrow_forward, size: 15),
                               ],
@@ -625,5 +603,122 @@ class _AddHobbiesFlowlyState extends State<AddHobbiesFlowly> {
         ],
       ),
     );
+  }
+
+  Future<void> _showNewDeadlineDialog({required bool isStart}) async {
+    DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
+
+    final pickedDate = await showDialog<DateTime>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Color(0xffeeeeee),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Title + Close Icon
+
+                    // Calendar
+                    TableCalendar(
+                      firstDay: DateTime.now(),
+                      lastDay: DateTime.now().add(const Duration(days: 365)),
+                      focusedDay: selectedDate,
+                      selectedDayPredicate:
+                          (day) => isSameDay(selectedDate, day),
+                      onDaySelected: (selectedDay, focusedDay) {
+                        setState(() {
+                          selectedDate = selectedDay;
+                        });
+                      },
+                      calendarStyle: CalendarStyle(
+                        todayDecoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          shape: BoxShape.circle,
+                        ),
+                        selectedDecoration: BoxDecoration(
+                          color: AppColorsFlowly.blueColor,
+                          shape: BoxShape.circle,
+                        ),
+                        selectedTextStyle: TextStyle(color: Colors.white),
+                      ),
+                      headerStyle: HeaderStyle(
+                        formatButtonVisible: false,
+                        titleCentered: true,
+                      ),
+                    ),
+                    12.verticalSpace,
+
+                    // Done Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            'Reset',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColorsFlowly.blueColor,
+                              fontSize: 16,
+                              fontFamily: 'Instrument Sans',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (isStart) {
+                                _startDate = selectedDate;
+                              } else {
+                                _endDate = selectedDate;
+                              }
+                            });
+                            Navigator.pop(context, selectedDate);
+                          },
+                          child: Text(
+                            'Done',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColorsFlowly.blueColor,
+                              fontSize: 16,
+                              fontFamily: 'Instrument Sans',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    12.verticalSpace,
+
+                    // Cancel Button
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (pickedDate != null) {
+      setState(() {
+        if (isStart) {
+          _startDate = pickedDate;
+        } else {
+          _endDate = pickedDate;
+        }
+      });
+    }
   }
 }

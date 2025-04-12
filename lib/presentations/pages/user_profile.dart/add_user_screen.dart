@@ -7,6 +7,7 @@ import 'package:a230_flowly/presentations/pages/main/main_screen_flowly.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -70,8 +71,7 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
         pickedFile.path,
       );
       setState(() {
-        // Сүрөттү туруктуу папкага сактоо
-        _imagePath = permanentPath; // Жолду сактоо
+        _imagePath = permanentPath;
       });
     }
   }
@@ -80,121 +80,133 @@ class _AddOrEditUserScreenState extends State<AddOrEditUserScreen> {
   Widget build(BuildContext context) {
     final userCubit = context.read<UserCubit>();
 
-    return Scaffold(
-      appBar:
-          widget.isEditing
-              ? AppBar(
-                title: const Text(
-                  'Edit profile',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                ),
-              )
-              : null,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 30),
-              Center(
-                child: Text(
-                  'Enter some information about yourself',
-                  style: TextStyle(
-                    color: AppColorsFlowly.black,
-                    fontSize: 28,
-                    fontWeight: FontWeight.w500,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: AppColorsFlowly.whiteColor,
+        appBar:
+            widget.isEditing
+                ? AppBar(
+                  title: const Text(
+                    'Edit profile',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    if (_imagePath.isEmpty) {
-                      _pickImage();
-                    } else {
-                      _showEditPhotoDialog(context);
-                    }
-                  },
-                  child: CircleAvatar(
-                    backgroundColor: AppColorsFlowly.backroundColor,
-                    radius: 70,
-                    backgroundImage:
-                        _imagePath.isNotEmpty
-                            ? FileImage(File(_imagePath))
-                            : null,
-                    child:
-                        _imagePath.isEmpty
-                            ? Image.asset(
-                              'assets/icons/Gallery.png',
-                              height: 33,
-                              width: 33,
-                            )
-                            : null,
+                )
+                : null,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                100.verticalSpace,
+                Center(
+                  child: Text(
+                    'Enter some information about yourself',
+                    style: TextStyle(
+                      color: AppColorsFlowly.black,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Name',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 10,
+                const SizedBox(height: 24),
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_imagePath.isEmpty) {
+                        _pickImage();
+                      } else {
+                        _showEditPhotoDialog(context);
+                      }
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: AppColorsFlowly.backroundColor,
+                      radius: 70,
+                      backgroundImage:
+                          _imagePath.isNotEmpty
+                              ? FileImage(File(_imagePath))
+                              : null,
+                      child:
+                          _imagePath.isEmpty
+                              ? Image.asset(
+                                'assets/icons/Gallery.png',
+                                height: 33,
+                                width: 33,
+                              )
+                              : null,
+                    ),
                   ),
-                  filled: true,
-                  fillColor: AppColorsFlowly.backroundColor,
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide.none,
-                    borderRadius: BorderRadius.circular(15),
+                ),
+                const SizedBox(height: 24),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Name',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                  hintText: 'What is your name?',
                 ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColorsFlowly.blueColor,
-                  disabledBackgroundColor: const Color(0xffC1E1FF),
-                  minimumSize: const Size(double.infinity, 48),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 10,
+                    ),
+                    filled: true,
+                    fillColor: AppColorsFlowly.backroundColor,
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: AppColorsFlowly.blueColor),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+
+                    hintText: 'What is your name?',
+                  ),
                 ),
-                onPressed:
-                    _isButtonEnabled
-                        ? () {
-                          final name = _nameController.text.trim();
-                          if (widget.isEditing && widget.index != null) {
-                            userCubit.updateUser(
-                              widget.index!,
-                              name,
-                              _imagePath,
-                            );
-                            Navigator.pop(context);
-                          } else {
-                            userCubit.addUser(name, _imagePath);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MainScreenFlowly(),
-                              ),
-                            );
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColorsFlowly.blueColor,
+                    disabledBackgroundColor: const Color(0xffC1E1FF),
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  onPressed:
+                      _isButtonEnabled
+                          ? () {
+                            final name = _nameController.text.trim();
+                            if (widget.isEditing && widget.index != null) {
+                              userCubit.updateUser(
+                                widget.index!,
+                                name,
+                                _imagePath,
+                              );
+                              Navigator.pop(context);
+                            } else {
+                              userCubit.addUser(name, _imagePath);
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MainScreenFlowly(),
+                                ),
+                              );
+                            }
                           }
-                        }
-                        : null,
-                child: const Text(
-                  'Save',
-                  style: TextStyle(color: Colors.white),
+                          : null,
+                  child: const Text(
+                    'Save',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

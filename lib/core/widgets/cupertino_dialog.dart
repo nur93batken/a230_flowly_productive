@@ -2,6 +2,7 @@ import 'package:a230_flowly/core/app_colors_flowly.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void showExitandDeleteDialog(BuildContext context) {
   showCupertinoDialog(
@@ -47,6 +48,10 @@ void showExitandDeleteDialog(BuildContext context) {
                 10.verticalSpace,
                 Text(
                   'Are you sure you want to come out? The entered data will be lost',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
@@ -64,9 +69,12 @@ void showExitandDeleteDialog(BuildContext context) {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Center(
-                      child: const Text(
+                      child: Text(
                         'Stay',
-                        style: TextStyle(color: AppColorsFlowly.blueColor),
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ),
@@ -88,9 +96,12 @@ void showExitandDeleteDialog(BuildContext context) {
                     padding: const EdgeInsets.symmetric(vertical: 12),
 
                     child: Center(
-                      child: const Text(
+                      child: Text(
                         'Leave',
-                        style: TextStyle(color: AppColorsFlowly.blueColor),
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ),

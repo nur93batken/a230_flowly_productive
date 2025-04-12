@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SettingsPageA230 extends StatelessWidget {
   const SettingsPageA230({super.key});
@@ -11,16 +12,16 @@ class SettingsPageA230 extends StatelessWidget {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
+
+        title: Text(
           'Settings',
-          style: TextStyle(
+          style: GoogleFonts.instrumentSans(
             color: Colors.black,
             fontSize: 28,
-            fontFamily: 'Instrument Sans',
             fontWeight: FontWeight.w500,
           ),
         ),
-        centerTitle: false,
+        centerTitle: true,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
         ),
@@ -55,10 +56,9 @@ class SettingsPageA230 extends StatelessWidget {
         ),
         child: Text(
           title,
-          style: TextStyle(
+          style: GoogleFonts.inter(
             color: Colors.black,
             fontSize: 16,
-            fontFamily: 'Inter',
             fontWeight: FontWeight.w500,
           ),
         ),

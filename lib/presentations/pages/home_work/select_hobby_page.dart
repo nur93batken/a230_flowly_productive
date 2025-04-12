@@ -4,6 +4,7 @@ import 'package:a230_flowly/presentations/models/hobby_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
 class SelectHobbyPage extends StatefulWidget {
@@ -86,12 +87,11 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
               ),
               onPressed: () => Navigator.pop(context),
             ),
-            title: const Text(
+            title: Text(
               "Hobbies",
-              style: TextStyle(
+              style: GoogleFonts.instrumentSans(
                 color: Colors.black,
                 fontSize: 20,
-                fontFamily: 'Instrument Sans',
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -222,20 +222,26 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
             child: Builder(
               builder: (_) {
                 if (allHobbies.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       "No hobbies yet.\nTry adding some first!",
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
                     ),
                   );
                 }
 
                 if (filteredHobbies.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       "No results found.",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
                     ),
                   );
                 }
@@ -272,15 +278,17 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.asset(
-                                  hobby.image,
-                                  height: 150,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                              hobby.image.isNotEmpty
+                                  ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.asset(
+                                      hobby.image,
+                                      height: 150,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                  : Container(),
                               8.verticalSpace,
                               Row(
                                 children: [
@@ -291,10 +299,9 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                                   8.horizontalSpace,
                                   Text(
                                     hobby.categoryModel.title,
-                                    style: TextStyle(
+                                    style: GoogleFonts.instrumentSans(
                                       color: Colors.black,
                                       fontSize: 20,
-                                      fontFamily: 'Instrument Sans',
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -303,10 +310,9 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                               4.verticalSpace,
                               Text(
                                 hobby.description,
-                                style: TextStyle(
+                                style: GoogleFonts.instrumentSans(
                                   color: Colors.black,
                                   fontSize: 16,
-                                  fontFamily: 'Instrument Sans',
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -335,12 +341,11 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                                         children: [
                                           Text(
                                             '${hobby.status}',
-                                            style: TextStyle(
+                                            style: GoogleFonts.instrumentSans(
                                               color: _getBorderColorForCategory(
                                                 hobby.status ?? 'Unknown',
                                               ),
                                               fontSize: 12,
-                                              fontFamily: 'Instrument Sans',
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -364,19 +369,17 @@ class _SelectHobbyPageState extends State<SelectHobbyPage> {
                                     children: [
                                       Text(
                                         timeLeftText,
-                                        style: const TextStyle(
+                                        style: GoogleFonts.instrumentSans(
                                           color: Color(0xFF797979),
                                           fontSize: 16,
-                                          fontFamily: 'Instrument Sans',
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                       Text(
                                         "${hobby.startTime.toLocal().toString().split(' ')[0]} → ${hobby.endTime.toLocal().toString().split(' ')[0]}",
-                                        style: const TextStyle(
+                                        style: GoogleFonts.instrumentSans(
                                           color: Color(0xFF797979),
                                           fontSize: 12,
-                                          fontFamily: 'Instrument Sans',
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),

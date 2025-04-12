@@ -5,6 +5,8 @@ import 'package:a230_flowly/presentations/pages/hobby/edit_hobby_flowly.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
 import 'package:a230_flowly/presentations/bloc/hobby_cubit.dart';
@@ -67,14 +69,12 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
 
-    // Используйте копию списка для иммутабельности
     final updatedImages = List<String>.from(widget.hobby.progressImages)
       ..add(image.path);
 
     final updatedHobby = widget.hobby.copyWith(progressImages: updatedImages);
     setState(() {
-      widget.hobby.progressImages =
-          updatedHobby.progressImages; // Жаңыртылган сүрөттөр тизмесин көрсөтүү
+      widget.hobby.progressImages = updatedHobby.progressImages;
     });
 
     context.read<HobbyCubit>().updateHobby(widget.hobbyIndex, updatedHobby);
@@ -84,7 +84,7 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
     if (widget.hobby.progressImages.isEmpty ||
         index < 0 ||
         index >= widget.hobby.progressImages.length) {
-      return; // Бош болсо же индекс туура эмес болсо, эч нерсе кылбоо
+      return;
     }
 
     showCupertinoDialog(
@@ -109,11 +109,11 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const SizedBox(width: 20),
-                      const Text(
+                      Text(
                         'Edit photo',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                        style: GoogleFonts.instrumentSans(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       GestureDetector(
@@ -129,7 +129,7 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                   InkWell(
                     onTap: () async {
                       Navigator.of(ctx).pop();
-                      await _changeImage(index); // Сүрөттү өзгөртүүгө чакыруу
+                      await _changeImage(index);
                     },
                     child: Container(
                       height: 45,
@@ -139,14 +139,23 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: const Center(child: Text('Change the photo')),
+                      child: Center(
+                        child: Text(
+                          'Change the photo',
+                          style: GoogleFonts.instrumentSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 10),
                   InkWell(
                     onTap: () {
                       Navigator.of(ctx).pop();
-                      _deleteImage(imagePath); // Сүрөттү өчүрүү
+                      _deleteImage(imagePath);
                     },
                     child: Container(
                       height: 45,
@@ -179,7 +188,16 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: const Center(child: Text('Back')),
+                      child: Center(
+                        child: Text(
+                          'Back',
+                          style: GoogleFonts.instrumentSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -191,16 +209,12 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
     );
   }
 
-  // Сүрөттү өзгөртүү
-  // Change the image by adding it to the list of progress images
   Future<void> _changeImage(int index) async {
-    // Эгерде индекс туура эмес болсо, аракет кылбоо керек
     if (index < 0 || index >= widget.hobby.progressImages.length) return;
 
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
 
-    // Индекс боюнча сүрөттүн ордуна жаңы сүрөттү кошо алабыз
     final updatedImages = List<String>.from(widget.hobby.progressImages);
     updatedImages[index] = image.path;
 
@@ -213,20 +227,14 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
     context.read<HobbyCubit>().updateHobby(widget.hobbyIndex, updatedHobby);
   }
 
-  // Delete an image from progressImages
   void _deleteImage(String imagePath) {
     final updatedImages =
-        widget.hobby.progressImages
-            .where((path) => path != imagePath) // Өчүрүлгөн сүрөттү алып салуу
-            .toList();
+        widget.hobby.progressImages.where((path) => path != imagePath).toList();
 
-    final updatedHobby = widget.hobby.copyWith(
-      progressImages: updatedImages, // Тизмени жаңыртуу
-    );
+    final updatedHobby = widget.hobby.copyWith(progressImages: updatedImages);
 
     setState(() {
-      widget.hobby.progressImages =
-          updatedHobby.progressImages; // Жаңыртылган сүрөттөр тизмесин көрсөтүү
+      widget.hobby.progressImages = updatedHobby.progressImages;
     });
 
     context.read<HobbyCubit>().updateHobby(widget.hobbyIndex, updatedHobby);
@@ -234,30 +242,50 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColorsFlowly.backroundColor,
-      appBar: AppBar(
-        title: Text(widget.hobby.name),
-        actions: [
-          IconButton(
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        backgroundColor: AppColorsFlowly.backroundColor,
+        appBar: AppBar(
+          centerTitle: false,
+          leading: IconButton(
             onPressed: () {
-              _showEditHobbyDialog(context);
+              Navigator.pop(context);
             },
-            icon: Icon(Icons.more_horiz),
+            icon: SvgPicture.asset(
+              'assets/icons/arrow.svg',
+              height: 24,
+              width: 24,
+            ),
           ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Основная информация
-            _buildMainInfo(),
-            20.verticalSpace,
-            // Поле ввода прогресса
-            _buildImageGallery(),
+          title: Text(
+            widget.hobby.name,
+            style: GoogleFonts.instrumentSans(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: Colors.black,
+            ),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                _showEditHobbyDialog(context);
+              },
+              icon: Icon(Icons.more_horiz),
+            ),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildMainInfo(),
+              20.verticalSpace,
+
+              _buildImageGallery(),
+            ],
+          ),
         ),
       ),
     );
@@ -272,20 +300,20 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
       case 'Frozen':
         return Colors.blue;
       default:
-        return Colors.grey; // Эгерде статус жок болсо
+        return Colors.grey;
     }
   }
 
   String _getCategoryIcon(String status) {
     switch (status) {
       case 'Done':
-        return 'assets/icons/done.png'; // Icon for Done status
+        return 'assets/icons/done.png';
       case 'In Progress':
-        return 'assets/icons/in_progress.png'; // Icon for In Progress status
+        return 'assets/icons/in_progress.png';
       case 'Frozen':
-        return 'assets/icons/frozen.png'; // Icon for Frozen status
+        return 'assets/icons/frozen.png';
       default:
-        return 'assets/icons/default.png'; // Default icon for unknown statuses
+        return 'assets/icons/default.png';
     }
   }
 
@@ -296,16 +324,15 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
   ) {
     switch (status) {
       case 'Done':
-        return ''; // For Done, we don't show anything
+        return '';
 
       case 'Frozen':
-        return '−'; // For Frozen, we show a minus sign
+        return '−';
 
       case 'In Progress':
-        if (endTime == null)
-          return ''; // If there's no end time, we don't show anything
+        if (endTime == null) return '';
         final difference = endTime.difference(startTime).inDays;
-        return '$difference'; // Show the difference in days
+        return '$difference';
 
       default:
         return '';
@@ -332,7 +359,7 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                   : Container(
                     height: 200,
                     width: double.infinity,
-                    color: Colors.grey[200], // Фон түсү
+                    color: Colors.grey[200],
                     child: Center(
                       child: Icon(
                         Icons.image_not_supported,
@@ -343,7 +370,6 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                   ),
         ),
         const SizedBox(height: 16),
-        Text(widget.hobby.description),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -353,10 +379,24 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
               width: 24,
             ),
             const SizedBox(width: 8),
-            Text(widget.hobby.categoryModel.title),
+            Text(
+              widget.hobby.name,
+              style: GoogleFonts.instrumentSans(
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
+        Text(
+          widget.hobby.description,
+          style: GoogleFonts.instrumentSans(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        16.verticalSpace,
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -372,7 +412,14 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                   spacing: 5.w,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(status),
+                    Text(
+                      status,
+                      style: GoogleFonts.instrumentSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: _getBorderColorForCategory(status),
+                      ),
+                    ),
                     Image.asset(
                       _getCategoryIcon(status),
                       height: 24,
@@ -384,12 +431,12 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
             ),
             Column(
               children: [
-                if (status != 'Done') // Скрываем для Done
+                if (status != 'Done')
                   Text(
                     status == 'Frozen'
                         ? '− day later'
                         : '${_getDeadlineText(widget.hobby.startTime, widget.hobby.endTime, status)} day${_getDeadlineText(widget.hobby.startTime, widget.hobby.endTime, status) == "1" ? "" : "s"} left',
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: AppColorsFlowly.iconGrey,
@@ -400,7 +447,7 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                       ? '${DateFormat('dd.MM.yy').format(widget.hobby.startTime)} → −'
                       // ignore: unnecessary_null_comparison
                       : '${DateFormat('dd.MM.yy').format(widget.hobby.startTime)} → ${widget.hobby.endTime != null ? DateFormat('dd.MM.yy').format(widget.hobby.endTime) : ""}',
-                  style: TextStyle(
+                  style: GoogleFonts.instrumentSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: AppColorsFlowly.iconGrey,
@@ -457,7 +504,6 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
                   }
                   return GestureDetector(
                     onTap: () {
-                      // Добавили проверку индекса
                       if (index >= 0 &&
                           index < widget.hobby.progressImages.length) {
                         _showEditPhotoDialog(context, index);
@@ -616,7 +662,6 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
       context: context,
       builder: (BuildContext ctx) {
         return Center(
-          // Фон с полупрозрачной подложкой
           child: Container(
             width: MediaQuery.of(ctx).size.width * 0.8,
             padding: const EdgeInsets.all(16),
@@ -624,14 +669,13 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
               color: AppColorsFlowly.backroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            // Используем Material для InkWell/нажатий (иначе можно GestureDetector)
+
             child: Material(
               color: Colors.transparent,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Заголовок + кнопка "X" справа
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -707,16 +751,27 @@ class _DetailScreenFlowlyState extends State<DetailScreenFlowly> {
     );
   }
 
+  Color _getBorderColorForCategory(String status) {
+    if (status == 'Done') {
+      return Colors.green; // Зеленый для Done
+    } else if (status == 'In Progress') {
+      return Colors.orange; // Оранжевый для In Progress
+    } else if (status == 'Frozen') {
+      return Colors.blue; // Синий для Frozen
+    } else {
+      return Colors.black; // Черный по умолчанию
+    }
+  }
+
   void _deleteAllImagesAndText() {
     final updatedHobby = widget.hobby.copyWith(
-      progressImages: [], // Бош сүрөттөр тизмеси
-      progressNotes: [], // Бош прогресс тексттери
+      progressImages: [],
+      progressNotes: [],
     );
 
     setState(() {
       widget.hobby.progressImages = updatedHobby.progressImages;
-      widget.hobby.progressNotes =
-          updatedHobby.progressNotes; // Тексттер дагы өчүрүлөт
+      widget.hobby.progressNotes = updatedHobby.progressNotes;
     });
 
     context.read<HobbyCubit>().updateHobby(widget.hobbyIndex, updatedHobby);

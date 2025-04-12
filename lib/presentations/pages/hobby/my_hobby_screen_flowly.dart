@@ -8,6 +8,7 @@ import 'package:a230_flowly/presentations/pages/hobby/detail_screen_flowly.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class MyHobbyScreenFlowly extends StatefulWidget {
@@ -56,10 +57,13 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
     List<CategoryModel> categories = [];
 
     for (var hobby in hobbies) {
-      if (!uniqueTitles.contains(hobby.categoryModel.title)) {
+      final title = hobby.categoryModel.title;
+      if (!uniqueTitles.contains(title)) {
+        uniqueTitles.add(title); // 👈 уникалдуулукту сактап коёбуз
         categories.add(hobby.categoryModel);
       }
     }
+
     return categories;
   }
 
@@ -82,429 +86,371 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColorsFlowly.backroundColor,
-      appBar: AppBar(
-        backgroundColor: AppColorsFlowly.whiteColor,
-        title: const Text(
-          'My hobby',
-          style: TextStyle(fontSize: 28, fontWeight: FontWeight.w500),
-        ),
-        centerTitle: true,
-        actions: [
-          Image.asset(
-            'assets/icons/Star2.png',
-            color: AppColorsFlowly.black,
-            height: 32,
-            width: 32,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: AppColorsFlowly.backroundColor,
+        appBar: AppBar(
+          backgroundColor: AppColorsFlowly.whiteColor,
+          title: Text(
+            'My hobby',
+            style: GoogleFonts.instrumentSans(
+              fontSize: 28,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          const SizedBox(width: 16),
-        ],
-        shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.vertical(
-            bottom: Radius.circular(15),
+          centerTitle: true,
+          actions: [
+            Image.asset(
+              'assets/icons/Star2.png',
+              color: AppColorsFlowly.black,
+              height: 32,
+              width: 32,
+            ),
+            const SizedBox(width: 16),
+          ],
+          shape: RoundedRectangleBorder(
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(15),
+            ),
+            side: BorderSide(color: AppColorsFlowly.backroundColor),
           ),
-          side: BorderSide(color: AppColorsFlowly.backroundColor),
         ),
-      ),
-      body: BlocBuilder<HobbyCubit, List<HobbyModel>>(
-        builder: (context, hobbies) {
-          if (hobbies.isEmpty) {
-            _EmptyPlaceHolder();
-          }
-          _availableCategories = _getUniqueCategories(hobbies);
-          bool showFilters = hobbies.length >= 3;
+        body: BlocBuilder<HobbyCubit, List<HobbyModel>>(
+          builder: (context, hobbies) {
+            if (hobbies.isEmpty) {
+              return _EmptyPlaceHolder();
+            }
+            _availableCategories = _getUniqueCategories(hobbies);
+            bool showFilters = hobbies.length >= 3;
 
-          List<HobbyModel> filteredHobbies = _filterHobbies(
-            hobbies,
-            _searchController.text,
-            _selectedCategoryTitles,
-          );
+            List<HobbyModel> filteredHobbies = _filterHobbies(
+              hobbies,
+              _searchController.text,
+              _selectedCategoryTitles,
+            );
+            return Stack(
+              children: [
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showFilters)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
 
-          // if (filteredHobbies.isEmpty) {
-          //   return Padding(
-          //     padding: const EdgeInsets.all(16.0),
-          //     child: Column(
-          //       crossAxisAlignment: CrossAxisAlignment.start,
-
-          //       children: [
-          //         SizedBox(
-          //           height: 80,
-          //           child: ListView.separated(
-          //             shrinkWrap: true,
-          //             scrollDirection: Axis.horizontal,
-          //             itemBuilder: (context, index) {
-          //               final category = _availableCategories[index];
-          //               final isSelected = _selectedCategoryTitles.contains(
-          //                 category.title,
-          //               );
-          //               return GestureDetector(
-          //                 onTap: () {
-          //                   setState(() {
-          //                     if (!isSelected) {
-          //                       _selectedCategoryTitles.clear();
-          //                       _selectedCategoryTitles.add(category.title);
-          //                     } else {
-          //                       _selectedCategoryTitles.remove(category.title);
-          //                     }
-          //                   });
-          //                 },
-
-          //                 child: Container(
-          //                   height: 78,
-          //                   width: 74,
-          //                   decoration: BoxDecoration(
-          //                     border: Border.all(
-          //                       color:
-          //                           isSelected
-          //                               ? AppColorsFlowly.blueColor
-          //                               : AppColorsFlowly
-          //                                   .whiteColor, // Highlight selected category
-          //                     ),
-          //                     color: AppColorsFlowly.whiteColor,
-          //                     borderRadius: BorderRadius.circular(12),
-          //                   ),
-          //                   child: Column(
-          //                     mainAxisAlignment: MainAxisAlignment.center,
-          //                     children: [
-          //                       Image.asset(
-          //                         category.imagePath,
-          //                         height: 36,
-          //                         width: 36,
-          //                       ),
-          //                       Text(
-          //                         category.title,
-          //                         style: TextStyle(
-          //                           fontSize: 10,
-          //                           fontWeight: FontWeight.w400,
-          //                         ),
-          //                       ),
-          //                     ],
-          //                   ),
-          //                 ),
-          //               );
-          //             },
-          //             separatorBuilder: (context, index) => 10.horizontalSpace,
-          //             itemCount: _availableCategories.length,
-          //           ),
-          //         ),
-          //         16.verticalSpace,
-          //         TextFormField(
-          //           controller: _searchController,
-          //           onChanged: (value) => setState(() {}),
-          //           decoration: InputDecoration(
-          //             contentPadding: EdgeInsets.symmetric(vertical: 10),
-          //             prefixIcon: Icon(Icons.search),
-          //             fillColor: Colors.white,
-          //             filled: true,
-          //             hintText: 'Search',
-          //             hintStyle: const TextStyle(color: Colors.grey),
-          //             border: OutlineInputBorder(
-          //               borderRadius: BorderRadius.circular(16),
-          //               borderSide: BorderSide.none,
-          //             ),
-          //           ),
-          //         ),
-          //         16.verticalSpace,
-          //       ],
-          //     ),
-          //   );
-          // }
-
-          return Stack(
-            children: [
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (showFilters)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            SizedBox(
-                              height: 80,
-                              child: ListView.separated(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (context, index) {
-                                  final category = _availableCategories[index];
-                                  final isSelected = _selectedCategoryTitles
-                                      .contains(category.title);
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        if (_selectedCategoryTitles.contains(
-                                          category.title,
-                                        )) {
-                                          _selectedCategoryTitles.remove(
+                            children: [
+                              SizedBox(
+                                height: 80,
+                                child: ListView.separated(
+                                  shrinkWrap: true,
+                                  scrollDirection: Axis.horizontal,
+                                  itemBuilder: (context, index) {
+                                    final category =
+                                        _availableCategories[index];
+                                    final isSelected = _selectedCategoryTitles
+                                        .contains(category.title);
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          if (_selectedCategoryTitles.contains(
                                             category.title,
-                                          );
-                                        } else {
-                                          _selectedCategoryTitles.add(
-                                            category.title,
-                                          );
-                                        }
-                                      });
-                                    },
+                                          )) {
+                                            _selectedCategoryTitles.remove(
+                                              category.title,
+                                            );
+                                          } else {
+                                            _selectedCategoryTitles.add(
+                                              category.title,
+                                            );
+                                          }
+                                        });
+                                      },
 
-                                    child: Container(
-                                      height: 78,
-                                      width: 74,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color:
-                                              isSelected
-                                                  ? AppColorsFlowly.blueColor
-                                                  : AppColorsFlowly
-                                                      .whiteColor, // Highlight selected category
-                                        ),
-                                        color: AppColorsFlowly.whiteColor,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Image.asset(
-                                            category.imagePath,
-                                            height: 36,
-                                            width: 36,
+                                      child: Container(
+                                        height: 78,
+                                        width: 74,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color:
+                                                isSelected
+                                                    ? AppColorsFlowly.blueColor
+                                                    : AppColorsFlowly
+                                                        .whiteColor, // Highlight selected category
                                           ),
-                                          Text(
-                                            category.title,
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                separatorBuilder:
-                                    (context, index) => 10.horizontalSpace,
-                                itemCount: _availableCategories.length,
-                              ),
-                            ),
-                            16.verticalSpace,
-                            TextFormField(
-                              controller: _searchController,
-                              onChanged: (value) => setState(() {}),
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
-                                prefixIcon: Icon(Icons.search),
-                                fillColor: Colors.white,
-                                filled: true,
-                                hintText: 'Search',
-                                hintStyle: const TextStyle(color: Colors.grey),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                            16.verticalSpace,
-                          ],
-                        ),
-
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          final hobby = filteredHobbies[index];
-                          final status =
-                              hobby.status!.isNotEmpty
-                                  ? hobby.status
-                                  : 'In Progress';
-
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => DetailScreenFlowly(
-                                        hobby: hobby,
-                                        hobbyIndex: index,
-                                      ),
-                                ),
-                              );
-                            },
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: AppColorsFlowly.whiteColor,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    hobby.image.isNotEmpty
-                                        ? ClipRRect(
+                                          color: AppColorsFlowly.whiteColor,
                                           borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          child: Image.file(
-                                            File(hobby.image),
-                                            height: 150,
-                                            width: double.infinity,
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
-                                        : Container(),
-                                    12.verticalSpace,
-                                    Row(
-                                      children: [
-                                        Image.asset(
-                                          hobby.categoryModel.imagePath,
-                                          height: 24,
-                                          width: 24,
-                                          fit: BoxFit.cover,
-                                        ),
-                                        10.horizontalSpace,
-                                        Text(
-                                          hobby.name,
-                                          style: TextStyle(
-                                            color: AppColorsFlowly.black,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w500,
+                                            12,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    12.verticalSpace,
-
-                                    Text(
-                                      hobby.description,
-                                      style: TextStyle(
-                                        color: AppColorsFlowly.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    12.verticalSpace,
-
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            _currentEditingIndex = index;
-                                            _showStatusDialog(context);
-                                          },
-                                          child: SizedBox(
-                                            height: 40.h,
-                                            width: 169,
-                                            child: DecoratedBox(
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  color:
-                                                      _getBorderColorForCategory(
-                                                        status!,
-                                                      ),
-                                                ),
-                                                borderRadius:
-                                                    BorderRadius.circular(40),
-                                              ),
-                                              child: Row(
-                                                spacing: 5.w,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(status),
-                                                  Image.asset(
-                                                    _getCategoryIcon(status),
-                                                    height: 24,
-                                                    width: 24,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Column(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            if (status !=
-                                                'Done') // Скрываем для Done
-                                              Text(
-                                                status == 'Frozen'
-                                                    ? '− day later'
-                                                    : '${_getDeadlineText(hobby.startTime, hobby.endTime, status)} day${_getDeadlineText(hobby.startTime, hobby.endTime, status) == "1" ? "" : "s"} left',
-                                                style: TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.w500,
-                                                  color:
-                                                      AppColorsFlowly.iconGrey,
-                                                ),
-                                              ),
+                                            Image.asset(
+                                              category.imagePath,
+                                              height: 36,
+                                              width: 36,
+                                            ),
                                             Text(
-                                              status == 'Frozen'
-                                                  ? '${DateFormat('dd.MM.yy').format(hobby.startTime)} → −'
-                                                  // ignore: unnecessary_null_comparison
-                                                  : '${DateFormat('dd.MM.yy').format(hobby.startTime)} → ${hobby.endTime != null ? DateFormat('dd.MM.yy').format(hobby.endTime) : ""}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                color: AppColorsFlowly.iconGrey,
+                                              category.title,
+                                              style: GoogleFonts.instrumentSans(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w400,
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder:
+                                      (context, index) => 10.horizontalSpace,
+                                  itemCount: _availableCategories.length,
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                        separatorBuilder: (context, index) => 10.verticalSpace,
-                        itemCount: filteredHobbies.length,
-                      ),
-                    ],
+                              16.verticalSpace,
+                              TextFormField(
+                                controller: _searchController,
+                                onChanged: (value) => setState(() {}),
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                  prefixIcon: Icon(Icons.search),
+                                  fillColor: Colors.white,
+                                  filled: true,
+                                  hintText: 'Search',
+                                  hintStyle: GoogleFonts.instrumentSans(
+                                    color: Colors.grey,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                              16.verticalSpace,
+                            ],
+                          ),
+
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            final hobby = filteredHobbies[index];
+                            final status =
+                                hobby.status!.isNotEmpty
+                                    ? hobby.status
+                                    : 'In Progress';
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => DetailScreenFlowly(
+                                          hobby: hobby,
+                                          hobbyIndex: index,
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  color: AppColorsFlowly.whiteColor,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      hobby.image.isNotEmpty
+                                          ? ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            child: Image.file(
+                                              File(hobby.image),
+                                              height: 150,
+                                              width: double.infinity,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
+                                          : Container(),
+                                      12.verticalSpace,
+                                      Row(
+                                        children: [
+                                          Image.asset(
+                                            hobby.categoryModel.imagePath,
+                                            height: 24,
+                                            width: 24,
+                                            fit: BoxFit.cover,
+                                          ),
+                                          10.horizontalSpace,
+                                          Text(
+                                            hobby.name,
+                                            style: GoogleFonts.instrumentSans(
+                                              color: AppColorsFlowly.black,
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      12.verticalSpace,
+
+                                      Text(
+                                        hobby.description,
+                                        style: GoogleFonts.instrumentSans(
+                                          color: AppColorsFlowly.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      12.verticalSpace,
+
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () {
+                                              _currentEditingIndex = index;
+                                              _showStatusDialog(context);
+                                            },
+                                            child: SizedBox(
+                                              height: 40.h,
+                                              width: 169,
+                                              child: DecoratedBox(
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                    color:
+                                                        _getBorderColorForCategory(
+                                                          status!,
+                                                        ),
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(40),
+                                                ),
+                                                child: Row(
+                                                  spacing: 5.w,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      status,
+                                                      style: GoogleFonts.instrumentSans(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            _getBorderColorForCategory(
+                                                              status,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                    Image.asset(
+                                                      _getCategoryIcon(status),
+                                                      height: 24,
+                                                      width: 24,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Column(
+                                            children: [
+                                              if (status !=
+                                                  'Done') // Скрываем для Done
+                                                Text(
+                                                  status == 'Frozen'
+                                                      ? '− day later'
+                                                      : '${_getDeadlineText(hobby.startTime, hobby.endTime, status)} day${_getDeadlineText(hobby.startTime, hobby.endTime, status) == "1" ? "" : "s"} left',
+                                                  style:
+                                                      GoogleFonts.instrumentSans(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            AppColorsFlowly
+                                                                .iconGrey,
+                                                      ),
+                                                ),
+                                              Text(
+                                                status == 'Frozen'
+                                                    ? '${DateFormat('dd.MM.yy').format(hobby.startTime)} → −'
+                                                    // ignore: unnecessary_null_comparison
+                                                    : '${DateFormat('dd.MM.yy').format(hobby.startTime)} → ${hobby.endTime != null ? DateFormat('dd.MM.yy').format(hobby.endTime) : ""}',
+                                                style:
+                                                    GoogleFonts.instrumentSans(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      color:
+                                                          AppColorsFlowly
+                                                              .iconGrey,
+                                                    ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          separatorBuilder:
+                              (context, index) => 10.verticalSpace,
+                          itemCount: filteredHobbies.length,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              // if (_showCategoryDropdown)
-            ],
-          );
-        },
-      ),
-      floatingActionButton: SizedBox(
-        height: 52.h,
-        width: 136.w,
-        child: FloatingActionButton(
-          elevation: 0,
-          backgroundColor: AppColorsFlowly.blueColor,
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => AddHobbiesFlowly()),
+                // if (_showCategoryDropdown)
+              ],
             );
           },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Add hobby',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: AppColorsFlowly.whiteColor,
+        ),
+        floatingActionButton: SizedBox(
+          height: 52.h,
+          width: 136.w,
+          child: FloatingActionButton(
+            elevation: 0,
+            backgroundColor: AppColorsFlowly.blueColor,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddHobbiesFlowly()),
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Add hobby',
+                  style: GoogleFonts.instrumentSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: AppColorsFlowly.whiteColor,
+                  ),
                 ),
-              ),
-              Icon(Icons.add, size: 20, color: AppColorsFlowly.whiteColor),
-            ],
+                Icon(Icons.add, size: 20, color: AppColorsFlowly.whiteColor),
+              ],
+            ),
           ),
         ),
       ),
@@ -572,13 +518,15 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                 child: Column(
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        15.horizontalSpace,
                         Text(
-                          'Hobby category',
-                          style: TextStyle(
+                          'Activity status',
+                          style: GoogleFonts.instrumentSans(
                             fontSize: 20,
                             fontWeight: FontWeight.w500,
+                            color: AppColorsFlowly.black,
                           ),
                         ),
                         IconButton(
@@ -629,7 +577,13 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                                         width: 24.h,
                                       ),
                                       SizedBox(width: 3.w),
-                                      Text(category.title),
+                                      Text(
+                                        category.title,
+                                        style: GoogleFonts.instrumentSans(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   Container(
@@ -682,9 +636,11 @@ class _MyHobbyScreenFlowlyState extends State<MyHobbyScreenFlowly> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Select',
-                        style: TextStyle(color: AppColorsFlowly.whiteColor),
+                        style: GoogleFonts.instrumentSans(
+                          color: AppColorsFlowly.whiteColor,
+                        ),
                       ),
                     ),
                   ],
@@ -715,7 +671,7 @@ class _EmptyPlaceHolder extends StatelessWidget {
         ),
         Text(
           "You don't have a hobby yet",
-          style: TextStyle(
+          style: GoogleFonts.instrumentSans(
             color: AppColorsFlowly.iconGrey,
             fontSize: 16,
             fontWeight: FontWeight.w500,

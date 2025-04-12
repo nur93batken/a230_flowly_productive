@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -33,7 +34,6 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
       await Future.delayed(const Duration(milliseconds: 300));
 
       await showDialog(
-        // ignore: use_build_context_synchronously
         context: context,
         barrierDismissible: false,
         builder: (_) => _AchievementPopup(achievement: achievement),
@@ -53,7 +53,7 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
       cubit.checkAchievementsData(context);
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _checkNewAchievementsPopup(context); // <-- UIда көрсөтүү
+        _checkNewAchievementsPopup(context);
       });
 
       _checkedDeadline = true;
@@ -71,7 +71,6 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
       if (isOverdue && notCompleted) {
         await Future.delayed(const Duration(milliseconds: 500));
         await showDialog(
-          // ignore: use_build_context_synchronously
           context: context,
           barrierDismissible: false,
           builder: (_) => _DeadlineExpiredPopup(homework: hw),
@@ -92,17 +91,16 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
           preferredSize: const Size.fromHeight(kToolbarHeight),
           child: ClipRRect(
             borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(12), // ← Бул бурчту тегеректейт
+              bottom: Radius.circular(12),
             ),
             child: AppBar(
               backgroundColor: AppColorsFlowly.whiteColor,
               centerTitle: true,
-              title: const Text(
+              title: Text(
                 "Homework",
-                style: TextStyle(
+                style: GoogleFonts.instrumentSans(
                   color: Colors.black,
                   fontSize: 28,
-                  fontFamily: 'Instrument Sans',
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -138,12 +136,11 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset("assets/images/homrwork.png", height: 130),
-                    const Text(
+                    Text(
                       "You don't have homework yet",
-                      style: TextStyle(
+                      style: GoogleFonts.instrumentSans(
                         color: Color(0xFF797979),
                         fontSize: 16,
-                        fontFamily: 'Instrument Sans',
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -166,10 +163,9 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
                     ),
                     child: TextField(
                       cursorColor: Color(0xFF797979),
-                      style: TextStyle(
+                      style: GoogleFonts.instrumentSans(
                         color: const Color(0xFF797979),
                         fontSize: 16,
-                        fontFamily: 'SF Pro',
                         fontWeight: FontWeight.w400,
                       ),
                       decoration: InputDecoration(
@@ -188,10 +184,9 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
                         fillColor: Colors.white,
                         hintText: "Search",
 
-                        hintStyle: TextStyle(
+                        hintStyle: GoogleFonts.instrumentSans(
                           color: const Color(0xFF797979),
                           fontSize: 16,
-                          fontFamily: 'SF Pro',
                           fontWeight: FontWeight.w400,
                         ),
                         contentPadding: EdgeInsets.symmetric(vertical: 12),
@@ -236,7 +231,7 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
                           );
                         },
                         child: HomeworkCard(
-                          key: ValueKey(homework.key), //  ✅
+                          key: ValueKey(homework.key),
                           homework: homework,
                         ),
                       );
@@ -265,7 +260,7 @@ class _HomeWorkPageA230State extends State<HomeWorkPageA230> {
               children: [
                 Text(
                   'Add homework',
-                  style: TextStyle(
+                  style: GoogleFonts.instrumentSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: AppColorsFlowly.whiteColor,
@@ -306,11 +301,10 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
     setState(() => selectedStatus = status);
 
     if (status == HomeworkStatus.atWork) {
-      // UI бир кадр жаңыргандан кийин
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
 
-        _showNewDeadlineDialog(context, widget.homework); // диалогду ачабыз
+        _showNewDeadlineDialog(context, widget.homework);
       });
     } else {
       context.read<HomeworkCubit>().updateHomeworkStatus(
@@ -344,19 +338,17 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title + Close Icon
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: const Text(
+                          child: Text(
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             "Select a new\ndeadline",
-                            style: TextStyle(
+                            style: GoogleFonts.instrumentSans(
                               color: Colors.black,
                               fontSize: 28,
-                              fontFamily: 'Instrument Sans',
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -373,7 +365,6 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                     ),
                     16.verticalSpace,
 
-                    // Calendar
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -410,7 +401,6 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                     ),
                     12.verticalSpace,
 
-                    // Done Button
                     GestureDetector(
                       onTap: () {
                         context.read<HomeworkCubit>().updateHomeworkdedline(
@@ -444,10 +434,9 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                             Text(
                               'Done',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: GoogleFonts.instrumentSans(
                                 color: Colors.white,
                                 fontSize: 16,
-                                fontFamily: 'Instrument Sans',
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -457,7 +446,6 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                     ),
                     12.verticalSpace,
 
-                    // Cancel Button
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
@@ -482,10 +470,9 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                             Text(
                               'Cancel the status changing',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: GoogleFonts.instrumentSans(
                                 color: const Color(0xFF181818),
                                 fontSize: 16,
-                                fontFamily: 'SF Pro',
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -515,10 +502,9 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
           Expanded(
             child: Text(
               "The deadline for your “${widget.homework.title}” is out!",
-              style: TextStyle(
+              style: GoogleFonts.instrumentSans(
                 color: Colors.black,
                 fontSize: 24,
-                fontFamily: 'Instrument Sans',
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -539,12 +525,11 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
           Row(
             children: [
               Expanded(
-                child: const Text(
+                child: Text(
                   "If you are not finished, change your activity status",
-                  style: TextStyle(
+                  style: GoogleFonts.instrumentSans(
                     color: Color(0xFF181818),
                     fontSize: 20,
-                    fontFamily: 'Instrument Sans',
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -575,10 +560,9 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
                       : status == HomeworkStatus.atWork
                       ? "At work"
                       : "Overdue",
-                  style: TextStyle(
+                  style: GoogleFonts.instrumentSans(
                     color: Colors.black,
                     fontSize: 16,
-                    fontFamily: 'Instrument Sans',
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -624,10 +608,9 @@ class _DeadlineExpiredPopupState extends State<_DeadlineExpiredPopup> {
               children: [
                 Text(
                   'Okay',
-                  style: TextStyle(
+                  style: GoogleFonts.instrumentSans(
                     color: Colors.white,
                     fontSize: 16,
-                    fontFamily: 'SF Pro',
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -655,13 +638,14 @@ class _AchievementPopup extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                "You have a new achievement!",
-                style: TextStyle(
-                  color: Color(0xFF797979),
-                  fontSize: 16,
-                  fontFamily: 'Instrument Sans',
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Text(
+                  "You have a new achievement!",
+                  style: GoogleFonts.instrumentSans(
+                    color: Color(0xFF797979),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               6.horizontalSpace,
@@ -680,10 +664,9 @@ class _AchievementPopup extends StatelessWidget {
           16.verticalSpace,
           Text(
             achievement.title,
-            style: TextStyle(
+            style: GoogleFonts.instrumentSans(
               color: const Color(0xFF181818),
               fontSize: 24,
-              fontFamily: 'Instrument Sans',
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -691,10 +674,9 @@ class _AchievementPopup extends StatelessWidget {
           Text(
             achievement.description,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: GoogleFonts.instrumentSans(
               color: const Color(0xFF797979),
               fontSize: 16,
-              fontFamily: 'Instrument Sans',
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -724,10 +706,9 @@ class _AchievementPopup extends StatelessWidget {
                   Text(
                     'Okay',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       color: Colors.white,
                       fontSize: 16,
-                      fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
                   ),

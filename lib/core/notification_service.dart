@@ -27,24 +27,13 @@ class NotificationService {
 
   final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-  Future<bool?> requestIosPermissions() async {
-    final iosImpl =
-        plugin
-            .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin
-            >();
-
-    if (iosImpl == null) return false;
-
-    final granted = await iosImpl.requestPermissions(
-      alert: true,
-      sound: true,
-      badge: true,
-    );
-    // granted.alert, granted.sound, granted.badge — bool
-
-    // Считаем "разрешено", если хотя бы alert = true (или как вам удобнее)
-    return granted;
+  Future<bool> requestIosPermissions() async {
+    final result = await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
+    return result ?? false;
   }
 
   static Future<void> scheduleNotification({
@@ -70,8 +59,7 @@ class NotificationService {
         body,
         tzTime,
         notificationDetails,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+
         androidScheduleMode:
             AndroidScheduleMode.exactAllowWhileIdle, // iOS'то таасир бербейт
         matchDateTimeComponents: DateTimeComponents.dateAndTime,

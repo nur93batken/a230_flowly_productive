@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../bloc/achievement_cubit.dart';
 
 class AchievementsPage extends StatelessWidget {
@@ -81,12 +82,11 @@ class AchievementsPage extends StatelessWidget {
               ),
               onPressed: () => Navigator.pop(context),
             ),
-            title: const Text(
+            title: Text(
               'Achievements',
-              style: TextStyle(
+              style: GoogleFonts.instrumentSans(
                 color: Colors.black,
                 fontSize: 28,
-                fontFamily: 'Instrument Sans',
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -132,9 +132,8 @@ class AchievementsPage extends StatelessWidget {
                             children: [
                               Text(
                                 ach.title,
-                                style: TextStyle(
+                                style: GoogleFonts.instrumentSans(
                                   fontSize: 16,
-                                  fontFamily: 'Instrument Sans',
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFF181818),
                                 ),
@@ -143,9 +142,8 @@ class AchievementsPage extends StatelessWidget {
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 ach.description,
-                                style: TextStyle(
+                                style: GoogleFonts.instrumentSans(
                                   fontSize: 14,
-                                  fontFamily: 'Instrument Sans',
                                   fontWeight: FontWeight.w500,
                                   color: Color(0xFF181818),
                                 ),

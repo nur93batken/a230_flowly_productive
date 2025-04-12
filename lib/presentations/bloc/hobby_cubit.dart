@@ -2,6 +2,7 @@ import 'package:a230_flowly/presentations/models/actions_model_a230.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:a230_flowly/presentations/models/hobby_model.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HobbyCubit extends Cubit<List<HobbyModel>> {
   HobbyCubit() : super([]);
@@ -49,6 +50,18 @@ class HobbyCubit extends Cubit<List<HobbyModel>> {
 
     // Обновляем состояние
     emit(box.values.toList());
+  }
+
+  Future<bool> requestNotificationPermission() async {
+    final status = await Permission.notification.status;
+
+    if (status.isPermanentlyDenied) {
+      return false;
+    }
+
+    final result = await Permission.notification.request();
+
+    return result.isGranted || result.isLimited;
   }
 
   Future<void> updateHobbyStatus(int index, String status) async {

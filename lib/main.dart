@@ -39,6 +39,7 @@ void main() async {
   await Hive.openBox<CategoryModel>('categories');
   await Hive.openBox<AchievementModel>('achievements');
   await Hive.openBox<ActionsModel>('actions');
+  await Hive.openBox('settingsBox');
   await initializeAchievementsIfNeeded();
 
   //await initializeCategoriesIfNeeded();
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
         child: MaterialApp(
+          debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
           title: 'Flowly App',
           theme: ThemeData(

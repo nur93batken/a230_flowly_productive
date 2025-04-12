@@ -7,10 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class EditHomeworkPage extends StatefulWidget {
-  final HomeworkModel? homework; // nullable — жаңы же редакция
+  final HomeworkModel? homework;
 
   const EditHomeworkPage({super.key, this.homework});
 
@@ -50,19 +51,17 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title + Close Icon
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: const Text(
+                          child: Text(
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             "Select a new\ndeadline",
-                            style: TextStyle(
+                            style: GoogleFonts.instrumentSans(
                               color: Colors.black,
                               fontSize: 28,
-                              fontFamily: 'Instrument Sans',
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -79,7 +78,6 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     ),
                     16.verticalSpace,
 
-                    // Calendar
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -116,7 +114,6 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     ),
                     12.verticalSpace,
 
-                    // Done Button
                     GestureDetector(
                       onTap: () {
                         setState(() {
@@ -130,7 +127,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                       },
                       child: Container(
                         width: double.infinity,
-                        height: 45.h,
+                        height: 45,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 13,
@@ -151,10 +148,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                             Text(
                               'Done',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: GoogleFonts.instrumentSans(
                                 color: Colors.white,
                                 fontSize: 16,
-                                fontFamily: 'Instrument Sans',
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -164,7 +160,6 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     ),
                     12.verticalSpace,
 
-                    // Cancel Button
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
@@ -189,10 +184,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                             Text(
                               'Cancel the status changing',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: GoogleFonts.instrumentSans(
                                 color: const Color(0xFF181818),
                                 fontSize: 16,
-                                fontFamily: 'SF Pro',
                                 fontWeight: FontWeight.w400,
                               ),
                             ),
@@ -281,16 +275,14 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Title + Close
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         "Homework status",
-                        style: TextStyle(
+                        style: GoogleFonts.instrumentSans(
                           color: Colors.black,
                           fontSize: 20,
-                          fontFamily: 'Instrument Sans',
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -305,7 +297,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Options
+
                   ...HomeworkStatus.values.map((status) {
                     final isSelected = selected == status;
                     return Container(
@@ -339,7 +331,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     );
                   }),
                   const SizedBox(height: 16),
-                  // Select Button
+
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -370,7 +362,6 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
     );
 
     if (_selectedStatus != null && _selectedStatus != widget.homework!.status) {
-      // ignore: use_build_context_synchronously
       _selectedStatus = _selectedStatus;
       setState(() {
         _selectedStatus = _selectedStatus;
@@ -403,10 +394,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
         _endDate!,
         _selectedStatus ?? HomeworkStatus.atWork,
         context,
-      ); // Hive'ге сактайбыз
-      cubit.loadHomeworks(); // Cubit аркылуу UI жаңыртабыз
+      );
+      cubit.loadHomeworks();
     } else {
-      // Жаңы тапшырма түзөбүз
       final newHw = HomeworkModel(
         title: _title,
         description: _description,
@@ -419,8 +409,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
       cubit.addHomework(newHw);
     }
 
-    // ignore: use_build_context_synchronously
-    Navigator.pop(context); // Форма жабылат
+    Navigator.pop(context);
   }
 
   void showDeleteDialog(BuildContext context) {
@@ -437,7 +426,6 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Title + Close icon
               Row(
                 children: [
                   Expanded(
@@ -518,7 +506,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                 ),
               ),
               12.verticalSpace,
-              // Stay button
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -532,12 +520,11 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Back",
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       color: Color(0xFF181818),
                       fontSize: 16,
-                      fontFamily: 'SF Pro',
                       fontWeight: FontWeight.w400,
                     ),
                   ),
@@ -564,7 +551,6 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Title + Close icon
               Row(
                 children: [
                   Expanded(
@@ -575,10 +561,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                         Text(
                           "Exit?",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: GoogleFonts.instrumentSans(
                             color: Colors.black,
                             fontSize: 20,
-                            fontFamily: 'Inter',
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -596,20 +581,18 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                 ],
               ),
               12.verticalSpace,
-              // Description
+
               Text(
                 'Are you sure you want to come out? The entered data will be lost',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: GoogleFonts.instrumentSans(
                   color: Colors.black,
                   fontSize: 16,
-                  fontFamily: 'Instrument Sans',
                   fontWeight: FontWeight.w500,
                 ),
               ),
               24.verticalSpace,
 
-              // Stay button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -636,13 +619,12 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
               ),
               const SizedBox(height: 12),
 
-              // Leave button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(ctx); // Close the dialog
-                    Navigator.pop(context); // Go back
+                    Navigator.pop(ctx);
+                    Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
@@ -675,7 +657,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      // ignore: deprecated_member_use
+
       child: WillPopScope(
         onWillPop: () async {
           showExitDialog(context);
@@ -687,7 +669,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
             preferredSize: const Size.fromHeight(kToolbarHeight),
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(12), // ← Бул бурчту тегеректейт
+                bottom: Radius.circular(12),
               ),
               child: AppBar(
                 backgroundColor: Colors.white,
@@ -707,10 +689,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                 ),
                 title: Text(
                   isEditMode ? 'Edit task' : 'New task',
-                  style: TextStyle(
+                  style: GoogleFonts.instrumentSans(
                     color: Colors.black,
                     fontSize: 20,
-                    fontFamily: 'Instrument Sans',
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -740,10 +721,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   16.verticalSpace,
                   Text(
                     'Task name*',
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       color: Colors.black,
                       fontSize: 16,
-                      fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -755,10 +735,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                       fillColor: Colors.white,
                       hintText: 'Task name*',
 
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.instrumentSans(
                         color: const Color(0xFF181818),
                         fontSize: 16,
-                        fontFamily: 'Instrument Sans',
                         fontWeight: FontWeight.w500,
                       ),
                       contentPadding: EdgeInsets.symmetric(
@@ -788,10 +767,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   16.verticalSpace,
                   Text(
                     'Task description',
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       color: Colors.black,
                       fontSize: 16,
-                      fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -803,10 +781,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                       fillColor: Colors.white,
                       hintText: "Task description",
 
-                      hintStyle: TextStyle(
+                      hintStyle: GoogleFonts.instrumentSans(
                         color: const Color(0xFF181818),
                         fontSize: 16,
-                        fontFamily: 'Instrument Sans',
                         fontWeight: FontWeight.w500,
                       ),
                       contentPadding: EdgeInsets.symmetric(
@@ -836,10 +813,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   16.verticalSpace,
                   Text(
                     'Start date* ',
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       color: Colors.black,
                       fontSize: 16,
-                      fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -848,7 +824,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     onTap: () => _showNewDeadlineDialog(isStart: true),
                     child: Container(
                       width: double.infinity,
-                      height: 48.h,
+                      height: 48,
                       padding: const EdgeInsets.symmetric(
                         vertical: 12,
                         horizontal: 16,
@@ -875,10 +851,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                                     .split('-')
                                     .reversed
                                     .join('.'),
-                            style: TextStyle(
+                            style: GoogleFonts.instrumentSans(
                               color: Colors.black,
                               fontSize: 16,
-                              fontFamily: 'Instrument Sans',
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -894,10 +869,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                   16.verticalSpace,
                   Text(
                     'End date* ',
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       color: Colors.black,
                       fontSize: 16,
-                      fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -906,7 +880,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     onTap: () => _showNewDeadlineDialog(isStart: false),
                     child: Container(
                       width: double.infinity,
-                      height: 48.h,
+                      height: 48,
                       padding: const EdgeInsets.symmetric(
                         vertical: 12,
                         horizontal: 16,
@@ -933,10 +907,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                                     .split('-')
                                     .reversed
                                     .join('.'),
-                            style: TextStyle(
+                            style: GoogleFonts.instrumentSans(
                               color: Colors.black,
                               fontSize: 16,
-                              fontFamily: 'Instrument Sans',
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -956,10 +929,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                       children: [
                         Text(
                           'Activity status* ',
-                          style: TextStyle(
+                          style: GoogleFonts.instrumentSans(
                             color: Colors.black,
                             fontSize: 16,
-                            fontFamily: 'Instrument Sans',
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -1007,10 +979,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                                       _selectedHobby == null
                                           ? 'Select category'
                                           : _selectedStatus!.name,
-                                      style: TextStyle(
+                                      style: GoogleFonts.instrumentSans(
                                         color: Colors.black,
                                         fontSize: 16,
-                                        fontFamily: 'Instrument Sans',
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -1030,10 +1001,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     ),
                   Text(
                     'Hobby categorization* ',
-                    style: TextStyle(
+                    style: GoogleFonts.instrumentSans(
                       color: Colors.black,
                       fontSize: 16,
-                      fontFamily: 'Instrument Sans',
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1042,7 +1012,7 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                     onTap: () => _pickHobby(),
                     child: Container(
                       width: double.infinity,
-                      height: 48.h,
+                      height: 48,
                       padding: const EdgeInsets.symmetric(
                         vertical: 12,
                         horizontal: 16,
@@ -1073,10 +1043,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                                 _selectedHobby == null
                                     ? 'Select hobby'
                                     : _selectedHobby!.name,
-                                style: TextStyle(
+                                style: GoogleFonts.instrumentSans(
                                   color: Colors.black,
                                   fontSize: 16,
-                                  fontFamily: 'Instrument Sans',
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -1126,10 +1095,9 @@ class _EditHomeworkPageState extends State<EditHomeworkPage> {
                               Text(
                                 'Save',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
+                                style: GoogleFonts.instrumentSans(
                                   color: Colors.white,
                                   fontSize: 16,
-                                  fontFamily: 'Instrument Sans',
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
